@@ -1,0 +1,61 @@
+devices:
+  living_room_lights:
+    ips: 
+      - "192.168.1.12"
+      - "192.168.1.13"
+    type: bulb
+
+  kitchen_lights:
+    ips: 
+      - "192.168.1.15"
+      - "192.168.1.16"
+    type: bulb
+
+  bedroom_lights:
+    ips: 
+      - "192.168.1.9"
+    type: plug
+
+  coffee_machine:
+    pin: 17
+    type: relay
+
+sequences:
+  morning:
+    - sequence_type : lighting
+      devices: 
+       - bedroom_lights
+      time: 8
+      function: TURN_ON
+    - sequence_type : coffee
+      devices: 
+       - coffee_machine
+      time: 0.38
+      function: RUN
+    - sequence_type : lighting
+      devices: 
+       - bedroom_lights
+      time: 9.5
+      function: TURN_OFF
+
+  afternoon:
+    - sequence_type : lighting
+      devices: 
+       - living_room_lights
+       - kitchen_lights
+      time: 6
+      function: TURN_ON 
+
+  evening:
+    - sequence_type : lighting
+      devices:
+       - living_room_lights
+       - kitchen_lights
+      function: DIM
+      time: 0.57
+    - sequence_type : lighting
+      devices:
+       - living_room_lights
+       - kitchen_lights
+      function: TURN_ON
+      time: 0.42
