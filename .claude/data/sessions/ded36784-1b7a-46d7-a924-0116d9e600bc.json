@@ -1,0 +1,7 @@
+{
+  "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+  "prompts": [
+    "Hey Claude, I'd like you to spin up a multi-agent team using the Home Auto Context MD for            \n    high-level architecture and the Home Auto Build Plan for the agent break-up."
+  ],
+  "agent_name": "CodeWeaver"
+}

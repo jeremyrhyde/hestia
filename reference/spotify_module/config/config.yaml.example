@@ -1,0 +1,35 @@
+# Spotify Controller Configuration
+# Copy this file to config.yaml and fill in your credentials
+
+spotify:
+  client_id: "your_spotify_client_id_here"
+  client_secret: "your_spotify_client_secret_here"
+  redirect_uri: "http://localhost:8888/callback"
+  # Optional: username and password for spotifyd (if not using OAuth)
+  # username: "your_spotify_username"
+  # password: "your_spotify_password"
+
+# Device configuration
+device_name: "SpotifyBot"
+
+# Default volume setting
+default_volume: 50
+
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  
+# Platform-specific overrides (optional)
+platform:
+  # Force specific settings per platform
+  raspberry_pi:
+    bitrate: 160
+    volume_normalisation: true
+  
+  macos:
+    bitrate: 320
+    volume_normalisation: true
+    
+  linux:
+    bitrate: 320
+    volume_normalisation: true
