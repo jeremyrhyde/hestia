@@ -1,0 +1,31 @@
+{
+  "name": "hera-home-automation",
+  "version": "1.0.0",
+  "description": "Home automation GUI with modular device control",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "backend:dev": "nodemon src/server.js",
+    "frontend:dev": "cd frontend && npm run dev",
+    "start": "node src/server.js",
+    "build": "cd frontend && npm run build",
+    "install:all": "npm install && cd frontend && npm install"
+  },
+  "keywords": ["home-automation", "iot", "gui", "nodejs"],
+  "author": "Jeremy Hyde",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "js-yaml": "^4.1.0",
+    "socket.io": "^4.7.4",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.2"
+  }
+}

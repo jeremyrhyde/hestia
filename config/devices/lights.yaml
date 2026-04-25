@@ -1,0 +1,86 @@
+# Light device configurations
+lights:
+  living_light_1:
+    name: "Living Room Main Light"
+    type: "smart_bulb"
+    brand: "philips_hue"
+    capabilities:
+      - "power"
+      - "brightness"
+      - "color"
+      - "temperature"
+    settings:
+      default_brightness: 80
+      default_color: "#ffffff"
+      default_temperature: 3000
+      min_brightness: 1
+      max_brightness: 100
+    connection:
+      protocol: "zigbee"
+      address: "192.168.1.100"
+      
+  living_light_2:
+    name: "Living Room Accent Light"
+    type: "smart_bulb"
+    brand: "lifx"
+    capabilities:
+      - "power"
+      - "brightness"
+      - "color"
+    settings:
+      default_brightness: 60
+      default_color: "#ff8c00"
+      min_brightness: 1
+      max_brightness: 100
+    connection:
+      protocol: "wifi"
+      address: "192.168.1.101"
+      
+  bedroom_light_1:
+    name: "Bedside Lamp"
+    type: "smart_bulb"
+    brand: "generic"
+    capabilities:
+      - "power"
+      - "brightness"
+    settings:
+      default_brightness: 50
+      min_brightness: 1
+      max_brightness: 100
+    connection:
+      protocol: "wifi"
+      address: "192.168.1.102"
+      
+  kitchen_light_1:
+    name: "Under Cabinet Lights"
+    type: "led_strip"
+    brand: "govee"
+    capabilities:
+      - "power"
+      - "brightness"
+      - "color"
+    settings:
+      default_brightness: 70
+      default_color: "#ffffff"
+      min_brightness: 1
+      max_brightness: 100
+    connection:
+      protocol: "wifi"
+      address: "192.168.1.103"
+      
+  kitchen_light_2:
+    name: "Kitchen Overhead Light"
+    type: "smart_bulb"
+    brand: "philips_hue"
+    capabilities:
+      - "power"
+      - "brightness"
+      - "temperature"
+    settings:
+      default_brightness: 85
+      default_temperature: 4000
+      min_brightness: 1
+      max_brightness: 100
+    connection:
+      protocol: "zigbee"
+      address: "192.168.1.104"

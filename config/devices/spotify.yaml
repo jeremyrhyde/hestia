@@ -1,0 +1,70 @@
+# Spotify device configurations
+# Temporarily disabled for development - uncomment when ready to set up Spotify integration
+spotify:
+  # living_spotify:
+  #   name: "Living Room Speaker"
+  #   device_id: "spotify_device_living_123"
+  #   device_type: "speaker"
+  #   brand: "sonos"
+  #   capabilities:
+  #     - "play"
+  #     - "pause"
+  #     - "skip"
+  #     - "volume"
+  #     - "shuffle"
+  #     - "repeat"
+  #   settings:
+  #     default_volume: 50
+  #     max_volume: 80
+  #     auto_play: false
+  #   connection:
+  #     protocol: "spotify_connect"
+  #     ip_address: "192.168.1.200"
+      
+  # bedroom_spotify:
+  #   name: "Bedroom Speaker"
+  #   device_id: "spotify_device_bedroom_456"
+  #   device_type: "speaker"
+  #   brand: "amazon_echo"
+  #   capabilities:
+  #     - "play"
+  #     - "pause"
+  #     - "skip"
+  #     - "volume"
+  #     - "shuffle"
+  #     - "repeat"
+  #   settings:
+  #     default_volume: 30
+  #     max_volume: 60
+  #     auto_play: false
+  #   connection:
+  #     protocol: "spotify_connect"
+  #     ip_address: "192.168.1.201"
+
+# Spotify API configuration
+api:
+  client_id_env: "SPOTIFY_CLIENT_ID"
+  client_secret_env: "SPOTIFY_CLIENT_SECRET"
+  redirect_uri: "http://localhost:3001/api/v1/spotify/callback"
+  scopes:
+    - "user-read-playback-state"
+    - "user-modify-playback-state"
+    - "user-read-currently-playing"
+    - "streaming"
+    - "user-library-read"
+    - "playlist-read-private"
+    - "playlist-read-collaborative"
+
+# Playlists and presets
+playlists:
+  morning:
+    name: "Morning Vibes"
+    spotify_id: "37i9dQZF1DX0XUsuxWHRQd"
+    
+  evening:
+    name: "Evening Chill"
+    spotify_id: "37i9dQZF1DX3YSRoSdA634"
+    
+  party:
+    name: "Party Mix"
+    spotify_id: "37i9dQZF1DX0XUfTFmNBRM"

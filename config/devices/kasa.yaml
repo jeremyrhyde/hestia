@@ -1,0 +1,63 @@
+# Kasa Device Configuration
+# Configure your TP-Link Kasa smart devices here
+
+kasa:
+  # Example Kasa Smart Bulb
+  living_kasa_bulb:
+    name: "Living Room Kasa Bulb"
+    type: "bulb"  # 'bulb' or 'plug'
+    brand: "tp_link_kasa"
+    capabilities: ["power", "brightness", "color", "temperature"]
+    settings:
+      default_brightness: 80
+      default_color: "#ffffff"
+      default_temperature: 2700
+      max_brightness: 100
+    connection:
+      protocol: "wifi"
+      address: "192.168.1.150"  # IP address of your Kasa device
+      
+  # Example Kasa Smart Plug
+  bedroom_kasa_plug:
+    name: "Bedroom Kasa Plug"
+    type: "plug"
+    brand: "tp_link_kasa"
+    capabilities: ["power"]
+    settings:
+      default_power: false
+    connection:
+      protocol: "wifi"
+      address: "192.168.1.151"  # IP address of your Kasa device
+
+  # Example Kasa Color Bulb
+  office_kasa_color_bulb:
+    name: "Office Kasa Color Bulb"
+    type: "bulb"
+    brand: "tp_link_kasa"
+    capabilities: ["power", "brightness", "color", "temperature"]
+    settings:
+      default_brightness: 75
+      default_color: "#4a90e2"
+      default_temperature: 4000
+      max_brightness: 100
+    connection:
+      protocol: "wifi"
+      address: "192.168.1.152"
+
+# Device Discovery Configuration
+discovery:
+  enabled: true
+  timeout: 5  # seconds
+  broadcast_address: "255.255.255.255"
+  port: 9999
+
+# Network Configuration
+network:
+  retry_attempts: 3
+  timeout: 10  # seconds
+  
+# Logging Configuration
+logging:
+  level: "info"  # debug, info, warn, error
+  log_commands: true
+  log_responses: false

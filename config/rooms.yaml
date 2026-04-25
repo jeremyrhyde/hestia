@@ -1,0 +1,66 @@
+# Room definitions and device groupings
+rooms:
+  living_room:
+    name: "Living Room"
+    description: "Main living area"
+    devices:
+      - type: "kasa"
+        id: "living_kasa_bulb"
+        name: "Living Room Kasa Bulb"
+      - type: "lights"
+        id: "living_light_1"
+        name: "Main Light"
+      - type: "lights"
+        id: "living_light_2"
+        name: "Accent Light"
+      # Spotify device temporarily disabled for development
+      # - type: "spotify"
+      #   id: "living_spotify"
+      #   name: "Living Room Speaker"
+    
+  bedroom:
+    name: "Bedroom"
+    description: "Master bedroom"
+    devices:
+      - type: "kasa"
+        id: "bedroom_kasa_plug"
+        name: "Bedroom Kasa Plug"
+      - type: "lights"
+        id: "bedroom_light_1"
+        name: "Bedside Lamp"
+      # - type: "spotify"
+      #   id: "bedroom_spotify"
+      #   name: "Bedroom Speaker"
+        
+  kitchen:
+    name: "Kitchen"
+    description: "Kitchen area"
+    devices:
+      - type: "lights"
+        id: "kitchen_light_1"
+        name: "Under Cabinet Lights"
+      - type: "lights"
+        id: "kitchen_light_2"
+        name: "Overhead Light"
+        
+  office:
+    name: "Office"
+    description: "Home office"
+    devices:
+      - type: "kasa"
+        id: "office_kasa_color_bulb"
+        name: "Office Kasa Color Bulb"
+
+# Room groups for batch operations
+room_groups:
+  downstairs:
+    name: "Downstairs"
+    rooms: ["living_room", "kitchen"]
+    
+  upstairs:
+    name: "Upstairs"
+    rooms: ["bedroom", "office"]
+    
+  all:
+    name: "Entire House"
+    rooms: ["living_room", "bedroom", "kitchen", "office"]
