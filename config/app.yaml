@@ -1,0 +1,32 @@
+# Main application configuration
+app:
+  name: "Hera Home Automation"
+  version: "1.0.0"
+  port: 3001
+  host: "localhost"
+  
+# API configuration
+api:
+  prefix: "/api/v1"
+  rate_limit:
+    window_ms: 900000  # 15 minutes
+    max: 100  # limit each IP to 100 requests per windowMs
+  
+# WebSocket configuration
+websocket:
+  enabled: true
+  cors:
+    origin: "http://localhost:3000"
+    methods: ["GET", "POST"]
+
+# Logging configuration
+logging:
+  level: "info"
+  file: "logs/app.log"
+  console: true
+  
+# Security
+security:
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"

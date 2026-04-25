@@ -1,0 +1,46 @@
+# Morning scene configuration
+scene:
+  name: "Morning"
+  description: "Gentle wake-up lighting and music"
+  
+# Device actions for this scene
+actions:
+  lights:
+    living_light_1:
+      power: true
+      brightness: 60
+      color: "#fff4e6"  # Warm white
+      temperature: 2700
+      
+    kitchen_light_2:
+      power: true
+      brightness: 80
+      temperature: 3500
+      
+    bedroom_light_1:
+      power: true
+      brightness: 40
+      
+  spotify:
+    living_spotify:
+      action: "play"
+      playlist: "morning"
+      volume: 25
+      shuffle: false
+      
+# Timing configuration
+timing:
+  fade_duration: 30  # seconds
+  delay_between_devices: 2  # seconds
+  
+# Conditions (optional)
+conditions:
+  time_range:
+    start: "06:00"
+    end: "10:00"
+  days:
+    - "monday"
+    - "tuesday"
+    - "wednesday"
+    - "thursday"
+    - "friday"

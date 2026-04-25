@@ -1,0 +1,6 @@
+[submodule "src/modules/spotify-module"]
+	path = src/modules/spotify-module
+	url = https://github.com/jeremyrhyde/spotify-module
+[submodule "src/modules/kasa-module"]
+	path = src/modules/kasa-module
+	url = https://github.com/jeremyrhyde/kasa-module
