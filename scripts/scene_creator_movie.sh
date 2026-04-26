@@ -13,8 +13,8 @@ upsert_scene '{
   "name": "Movie",
   "description": "Dim the living room, kitchen off",
   "actions": [
-    { "device_id": "living-room-light-1",       "action": "turn_off" },
-    { "device_id": "living-room-light-2",       "action": "turn_off" },
+    { "device_id": "bedroom-light",       "action": "turn_on" },
+    { "device_id": "living-room-light",       "action": "turn_off" },
     { "device_id": "kitchen-light",       "action": "set_brightness", "params": { "level": 20 } }
   ]
 }'

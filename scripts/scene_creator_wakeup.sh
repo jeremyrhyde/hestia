@@ -14,8 +14,7 @@ upsert_scene '{
   "description": "Turn on lights at full brightness",
   "actions": [
     { "device_id": "kitchen-light",       "action": "set_brightness", "params": { "level": 100 } },
-    { "device_id": "living-room-light-1", "action": "set_brightness", "params": { "level": 100 }, "delay_ms": 2000 },
-    { "device_id": "living-room-light-2", "action": "set_brightness", "params": { "level": 100 } },
+    { "device_id": "living-room-light", "action": "set_brightness", "params": { "level": 100 }, "delay_ms": 2000 },
     { "device_id": "bedroom-light",       "action": "turn_on", "delay_ms": 2000 }
   ]
 }'
