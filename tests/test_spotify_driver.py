@@ -4,7 +4,7 @@ Usage::
 
     SPOTIFY_CLIENT_ID=... \\
     SPOTIFY_CLIENT_SECRET=... \\
-    SPOTIFY_REDIRECT_URI=http://localhost:8888/callback \\
+    SPOTIFY_REDIRECT_URI=http://127.0.0.1:8888/callback \\
     SPOTIFY_TARGET_DEVICE=librespot \\
     uv run python tests/test_spotify_driver.py
 
@@ -138,7 +138,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--redirect-uri",
         default=os.environ.get(
-            "SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback"
+            "SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8888/callback"
         ),
     )
     p.add_argument(

@@ -14,7 +14,7 @@ KASA_HOST ?=
 KASA_KIND ?= plug
 SPOTIFY_CLIENT_ID ?=
 SPOTIFY_CLIENT_SECRET ?=
-SPOTIFY_REDIRECT_URI ?= http://localhost:8888/callback
+SPOTIFY_REDIRECT_URI ?= http://127.0.0.1:8888/callback
 
 .DEFAULT_GOAL := help
 
@@ -125,7 +125,7 @@ relay-test:
 .PHONY: kasa-discover
 kasa-discover:
 	@echo "Scanning LAN for Kasa devices (~5s)..."
-	$(UV) run python -m kasa discover
+	$(UV) run kasa discover
 
 .PHONY: kasa-test
 kasa-test:

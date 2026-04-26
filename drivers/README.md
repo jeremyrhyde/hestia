@@ -43,7 +43,7 @@ uv run python tests/test_kasa_driver.py --host 192.168.1.43 --kind bulb
 # Spotify
 SPOTIFY_CLIENT_ID=... \
 SPOTIFY_CLIENT_SECRET=... \
-SPOTIFY_REDIRECT_URI=http://localhost:8888/callback \
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:8888/callback \
 SPOTIFY_TARGET_DEVICE=librespot \
 uv run python tests/test_spotify_driver.py
 uv run python tests/test_spotify_driver.py --mock

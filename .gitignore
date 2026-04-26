@@ -1,6 +1,7 @@
 # Editor / IDE
 .claude
 reference/
+logs*
 
 # Python
 __pycache__/

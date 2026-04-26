@@ -28,7 +28,7 @@ Example ``devices.yaml``::
         params:
           client_id: <YOUR_SPOTIFY_CLIENT_ID>
           client_secret: <YOUR_SPOTIFY_CLIENT_SECRET>
-          redirect_uri: http://localhost:8888/callback
+          redirect_uri: http://127.0.0.1:8888/callback
           target_device_name: librespot
 """
 
