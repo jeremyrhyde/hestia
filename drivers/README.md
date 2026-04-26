@@ -98,6 +98,53 @@ time a process runs with a given `cache_path` (default `.spotify_cache`),
 If auth fails for any reason at runtime, the driver logs a warning and flips
 into mock mode rather than crashing.
 
+## Tandem Kasa fixtures (multi-host)
+
+The Kasa driver's `host` parameter accepts either a single string or a list
+of strings. A list creates a "tandem fixture" — multiple physical Kasa
+devices presented as one logical device through the API and UI.
+
+```yaml
+- id: living-room-fixture
+  name: Living Room Light
+  driver: kasa
+  params:
+    host: [192.168.1.6, 192.168.1.7]
+    kind: bulb
+```
+
+How it behaves:
+
+- Every action (`turn_on/off/toggle/set_brightness`) fans out to all members
+  concurrently via `asyncio.gather`.
+- **Power state** is reported as `any(member is on)` — tapping the toggle
+  feels responsive even if the bulbs drifted out of sync.
+- **Brightness** is the average of members that report a value.
+- **Construction-time** failures (any host unreachable at startup) raise,
+  so the fixture appears in `/health.devices_failed`.
+- **Runtime per-host failures** during an action are logged but don't abort
+  the fanout — surviving members still receive the command.
+- All members must be the same `kind` (plug or bulb). Mixing is not
+  supported; the driver advertises one set of capabilities for the fixture.
+
+Single-host configs (`host: 192.168.1.6`) keep working unchanged — they are
+internally normalized to a single-element list. The `state.attributes.host`
+field preserves whichever shape the user originally configured.
+
+Tests for tandem behavior live in `tests/test_kasa_tandem.py` and run on any
+machine (no hardware required). For real-hardware verification:
+
+```bash
+# Single host, hardware
+KASA_HOST=192.168.1.6 uv run python tests/test_kasa_driver.py
+
+# Tandem hardware: there's no dedicated CLI yet — register the fixture in
+# devices.yaml, boot the server, and curl the fixture endpoint:
+curl -X POST http://localhost:8000/devices/living-room-fixture/action \
+  -H 'Content-Type: application/json' \
+  -d '{"action": "toggle"}'
+```
+
 ## How to add a new driver
 
 1. **Create the file**: `drivers/<thing>_driver.py`.

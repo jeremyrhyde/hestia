@@ -41,19 +41,13 @@ devices:
     name: Kitchen Light
     driver: kasa
     params:
-      host: 192.168.1.11
+      host: [192.168.1.11, 192.168.1.8]
       kind: bulb
-  - id: living-room-light-1
+  - id: living-room-light
     name: Living Room Light
     driver: kasa
     params:
-      host: 192.168.1.6
-      kind: bulb
-  - id: living-room-light-2
-    name: Living Room Light
-    driver: kasa
-    params:
-      host: 192.168.1.7
+      host: [192.168.1.6, 192.168.1.7]
       kind: bulb
 
   # ---------------------------------------------------------------------

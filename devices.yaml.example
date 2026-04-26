@@ -50,6 +50,37 @@ devices:
       kind: plug          # "plug" or "bulb"; bulbs gain the dimmer capability
 
   # ---------------------------------------------------------------------
+  # Tandem fixture — multiple Kasa devices controlled as one.
+  #
+  # Common case: a fixture with two bulbs that should always behave as a
+  # single light from the user's perspective. Use a list for `host`:
+  #
+  #     params:
+  #       host: [192.168.1.6, 192.168.1.7]
+  #       kind: bulb
+  #
+  # Behavior:
+  # - Every action (turn_on/off/toggle/set_brightness) fans out to all
+  #   members concurrently.
+  # - Power state is reported as `any(member is on)` — tapping the toggle
+  #   feels responsive even if members have drifted out of sync.
+  # - Brightness is reported as the average of members.
+  # - All members must be the same `kind` (plug or bulb) — mixing is not
+  #   supported.
+  # - If any host fails to connect at startup, the whole fixture appears
+  #   in /health.devices_failed.
+  # - Per-host failures DURING runtime actions are logged but don't abort
+  #   the fanout — the surviving member(s) still get the command.
+  #
+  # Uncomment and adjust:
+  # - id: living-room-fixture
+  #   name: Living Room Light
+  #   driver: kasa
+  #   params:
+  #     host: [192.168.1.6, 192.168.1.7]
+  #     kind: bulb
+
+  # ---------------------------------------------------------------------
   # Kasa dimmable bulb (uncomment if you have one).
   # ---------------------------------------------------------------------
   # - id: kasa-bedroom-lamp
