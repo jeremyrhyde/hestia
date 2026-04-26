@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a45796464ab52f58e",
+    "agent_type": "builder",
+    "agent_transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc/subagents/agent-a45796464ab52f58e.jsonl"
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a45796464ab52f58e",
+    "agent_type": "builder",
+    "agent_transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc/subagents/agent-a45796464ab52f58e.jsonl"
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a45796464ab52f58e",
+    "agent_type": "builder",
+    "agent_transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc/subagents/agent-a45796464ab52f58e.jsonl"
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a9af88fd5c942bce2",
+    "agent_type": "builder",
+    "agent_transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc/subagents/agent-a9af88fd5c942bce2.jsonl"
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "acd044ba7a763a0f9",
+    "agent_type": "builder",
+    "agent_transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc/subagents/agent-acd044ba7a763a0f9.jsonl"
+  }
+]

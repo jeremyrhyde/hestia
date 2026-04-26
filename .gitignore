@@ -1,2 +1,26 @@
+# Editor / IDE
 .claude
+reference/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Databases
+*.db
+*.db-journal
+
+# Environment
+.env
+
+# Virtual environments
+venv/
+.venv/
+
+# Tooling caches
+.pytest_cache/
+*.egg-info/
+
+# OS
+.DS_Store

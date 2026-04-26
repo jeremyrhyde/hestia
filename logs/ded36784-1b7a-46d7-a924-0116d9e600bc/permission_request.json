@@ -1,0 +1,156 @@
+[
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc.jsonl",
+    "cwd": "/Users/jhyde/Development/hestia",
+    "permission_mode": "default",
+    "agent_id": "a7c8272083519b047",
+    "agent_type": "builder",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jhyde/Development/hestia/core/__init__.py",
+      "content": ""
+    },
+    "permission_suggestions": [
+      {
+        "type": "setMode",
+        "mode": "acceptEdits",
+        "destination": "session"
+      }
+    ]
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc.jsonl",
+    "cwd": "/Users/jhyde/Development/hestia",
+    "permission_mode": "acceptEdits",
+    "agent_id": "a7c8272083519b047",
+    "agent_type": "builder",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "pip install -r requirements.txt 2>&1 | tail -20",
+      "timeout": 300000,
+      "description": "Install dependencies"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "pip install *"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc.jsonl",
+    "cwd": "/Users/jhyde/Development/hestia",
+    "permission_mode": "acceptEdits",
+    "agent_id": "a7c8272083519b047",
+    "agent_type": "builder",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "python -c \"import pydantic; print('pydantic', pydantic.VERSION)\" 2>&1; python -c \"import pydantic_settings; print('pydantic_settings ok')\" 2>&1; python -c \"import pytest; print('pytest', pytest.__version__)\" 2>&1; python -c \"import pytest_asyncio; print('pytest_asyncio ok')\" 2>&1",
+      "description": "Check installed deps"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "python -c \"import pydantic; print('pydantic', pydantic.VERSION)\""
+          },
+          {
+            "toolName": "Bash",
+            "ruleContent": "python -c \"import pydantic_settings; print('pydantic_settings ok')\""
+          },
+          {
+            "toolName": "Bash",
+            "ruleContent": "python -c \"import pytest; print('pytest', pytest.__version__)\""
+          },
+          {
+            "toolName": "Bash",
+            "ruleContent": "python -c \"import pytest_asyncio; print('pytest_asyncio ok')\""
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc.jsonl",
+    "cwd": "/Users/jhyde/Development/hestia",
+    "permission_mode": "acceptEdits",
+    "agent_id": "a7c8272083519b047",
+    "agent_type": "builder",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "pip3 install pydantic pydantic-settings pytest-asyncio 2>&1 | tail -5",
+      "timeout": 120000,
+      "description": "Install missing deps"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "pip3 install *"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  },
+  {
+    "session_id": "ded36784-1b7a-46d7-a924-0116d9e600bc",
+    "transcript_path": "/Users/jhyde/.claude/projects/-Users-jhyde-Development-hestia/ded36784-1b7a-46d7-a924-0116d9e600bc.jsonl",
+    "cwd": "/Users/jhyde/Development/hestia",
+    "permission_mode": "acceptEdits",
+    "agent_id": "a7c8272083519b047",
+    "agent_type": "builder",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls /opt/homebrew/lib/python3.11/site-packages/ 2>/dev/null | grep -iE 'pydantic|fastapi' | head; find /Users/jhyde -maxdepth 4 -name 'pydantic' -type d 2>/dev/null | head; find / -maxdepth 6 -name 'pydantic' -type d 2>/dev/null | head -5",
+      "description": "Search for pydantic install"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Read",
+            "ruleContent": "//opt/homebrew/lib/python3.11/site-packages/**"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "session"
+      },
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Read",
+            "ruleContent": "//Users/jhyde/**"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "session"
+      }
+    ]
+  }
+]

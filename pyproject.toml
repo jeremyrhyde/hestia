@@ -1,0 +1,31 @@
+[project]
+name = "hestia"
+version = "0.1.0"
+description = "Raspberry Pi home automation system: FastAPI core dispatching commands from multiple interfaces (touchscreen, voice, scheduler) to device drivers."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "aiosqlite",
+    "python-kasa",
+    "websockets",
+    # gpiozero is Pi-only — skip on macOS / Windows so dev installs work.
+    'gpiozero ; sys_platform == "linux"',
+    "spotipy>=2.26.0",
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[tool.pytest.ini_options]
+# `auto` lets `async def` test functions be discovered without an explicit
+# `@pytest.mark.asyncio` decorator. The existing decorators are kept for
+# clarity but become redundant under this setting.
+asyncio_mode = "auto"
+testpaths = ["tests"]
