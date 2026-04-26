@@ -37,8 +37,10 @@ help:
 	@echo "  make test           Run the pytest suite (schemas + core)"
 	@echo "  make test-schemas   pytest tests/test_schemas.py"
 	@echo "  make test-core      pytest tests/test_core.py"
+	@echo "  make test-api       pytest tests/test_api.py (Phase 3 API)"
 	@echo "  make test-integration   Core integration micro-test"
 	@echo "  make test-mock      All driver tests in --mock mode"
+	@echo "  make ws-test        Run the WebSocket smoke client"
 	@echo ""
 	@echo "Tests — hardware (run on the Pi with real devices):"
 	@echo "  make relay-test     Real GPIO relay test (relay must be wired)"
@@ -100,9 +102,17 @@ test-schemas:
 test-core:
 	$(PYTEST) tests/test_core.py -v
 
+.PHONY: test-api
+test-api:
+	$(PYTEST) tests/test_api.py -v
+
 .PHONY: test-integration
 test-integration:
 	$(PYTHON) tests/test_core_integration.py
+
+.PHONY: ws-test
+ws-test:
+	$(PYTHON) tests/ws_test_client.py
 
 .PHONY: test-mock
 test-mock:

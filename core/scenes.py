@@ -3,7 +3,8 @@
 A scene is an ordered list of device actions. The :class:`SceneEngine`
 walks that list, dispatches each action through the
 :class:`drivers.registry.DriverRegistry`, optionally inserts a
-``delay_ms`` pause before an action, and publishes events as it goes.
+``delay_ms`` pause before an action, and publishes a single
+``SCENE_EXECUTED`` event when the loop finishes.
 
 This module never imports concrete driver classes — it only knows about
 the registry interface. That keeps the dependency rule clean: ``core/``
@@ -13,6 +14,12 @@ receives by injection.
 Per-action errors are caught and folded into the result list rather than
 aborting the entire scene, matching the spec ("if one device action
 fails, log it and continue to the next action").
+
+Per-step ``DEVICE_STATE_CHANGED`` events are published by the
+:class:`drivers.registry.DriverRegistry` itself (Phase 3 reconciliation),
+so the scene engine no longer publishes them — that keeps the firing
+uniform regardless of whether the caller is the API, this engine, or
+the scheduler.
 """
 
 from __future__ import annotations
@@ -87,14 +94,21 @@ class SceneEngine:
 
         try:
             new_state = await self._registry.execute_action(
-                step.device_id, action
+                step.device_id, action, source=source
             )
         except Exception as exc:
-            logger.exception(
-                "scene action failed: device=%s action=%s",
-                step.device_id,
-                step.action,
-            )
+            if isinstance(exc, KeyError):
+                logger.warning(
+                    "scene action skipped: device=%s not registered (action=%s)",
+                    step.device_id,
+                    step.action,
+                )
+            else:
+                logger.exception(
+                    "scene action failed: device=%s action=%s",
+                    step.device_id,
+                    step.action,
+                )
             # Best-effort error event so dashboards see the failure.
             try:
                 await self._bus.publish(
@@ -114,15 +128,8 @@ class SceneEngine:
                 "error": str(exc),
             }
 
-        # Successful dispatch — broadcast the new state.
-        await self._bus.publish(
-            Event(
-                type=EventType.DEVICE_STATE_CHANGED,
-                source=source,
-                device_id=step.device_id,
-                data={"state": new_state.model_dump(mode="json")},
-            )
-        )
+        # Successful dispatch — registry has already published
+        # DEVICE_STATE_CHANGED on our behalf, so we don't double-fire here.
         return {
             "device_id": step.device_id,
             "success": True,

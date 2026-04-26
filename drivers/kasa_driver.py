@@ -116,24 +116,20 @@ class KasaDriver(DeviceDriver):
         try:
             self._device = await Device.connect(host=self._host)
             return self._device
-        except KasaException as exc:
-            logger.warning(
-                "KasaDriver(%s): connect to %s failed (%r) — switching to MOCK mode",
+        except (KasaException, Exception) as exc:
+            # Construction-time connection failures used to silently flip into
+            # mock mode, which masked config errors (wrong IP, device offline)
+            # behind a fake-success boot. We now surface the failure so the
+            # operator sees it in /health and the registry doesn't pretend to
+            # have a working device. Test scripts that need mock behavior set
+            # ``driver._mock = True`` explicitly.
+            logger.error(
+                "KasaDriver(%s): connect to %s failed (%r)",
                 self._id,
                 self._host,
                 exc,
             )
-            self._mock = True
-            return None
-        except Exception as exc:  # noqa: BLE001 - any failure → mock mode
-            logger.warning(
-                "KasaDriver(%s): unexpected connect error to %s (%r) — MOCK mode",
-                self._id,
-                self._host,
-                exc,
-            )
-            self._mock = True
-            return None
+            raise
 
     async def _refresh(self) -> DeviceState:
         if self._mock:

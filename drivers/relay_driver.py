@@ -99,15 +99,28 @@ class RelayDriver(DeviceDriver):
             self._device = OutputDevice(  # type: ignore[misc]
                 pin=pin, active_high=active_high, initial_value=False
             )
-        except Exception as exc:  # pragma: no cover - covers macOS Device.pin_factory errors
-            logger.warning(
-                "RelayDriver(%s): failed to initialise pin %d (%r) — running in MOCK mode",
-                device_id,
-                pin,
-                exc,
-            )
-            self._mock = True
-            self._device = None
+        except Exception as exc:  # pragma: no cover
+            # BadPinFactory means gpiozero couldn't find a backend (typical
+            # on macOS dev machines that have gpiozero installed but no Pi
+            # hardware) — fall back to mock so the API server still runs.
+            # Any other init failure (pin in use, invalid pin, etc.) on a
+            # real Pi is a config error and should be surfaced.
+            if type(exc).__name__ == "BadPinFactory":
+                logger.warning(
+                    "RelayDriver(%s): no GPIO backend available (%r) — running in MOCK mode",
+                    device_id,
+                    exc,
+                )
+                self._mock = True
+                self._device = None
+            else:
+                logger.error(
+                    "RelayDriver(%s): failed to initialise pin %d (%r)",
+                    device_id,
+                    pin,
+                    exc,
+                )
+                raise
 
     # -- helpers --------------------------------------------------------
 

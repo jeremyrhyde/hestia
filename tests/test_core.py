@@ -316,7 +316,10 @@ async def _collect_events(bus: EventBus) -> tuple[list[Event], callable]:
 
 
 async def test_scene_engine_runs_actions_in_order(event_bus):
-    registry = DriverRegistry()
+    # Phase 3 reconciliation: the registry is the publisher of
+    # DEVICE_STATE_CHANGED, so we wire it with the bus to keep the
+    # "3 state-changed events fired" assertion meaningful.
+    registry = DriverRegistry(event_bus=event_bus)
     a = FakeDriver("dev-a")
     b = FakeDriver("dev-b")
     c = FakeDriver("dev-c")
@@ -355,7 +358,9 @@ async def test_scene_engine_runs_actions_in_order(event_bus):
 
 
 async def test_scene_engine_partial_failure(event_bus):
-    registry = DriverRegistry()
+    # Wire the registry with the bus so DEVICE_STATE_CHANGED publishes for
+    # the two successful dispatches (registry-level publish, Phase 3).
+    registry = DriverRegistry(event_bus=event_bus)
     registry.register("dev-a", FakeDriver("dev-a"))
     registry.register("dev-b", FakeDriver("dev-b", fail_on={"turn_on"}))
     registry.register("dev-c", FakeDriver("dev-c"))

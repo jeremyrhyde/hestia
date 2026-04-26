@@ -89,8 +89,10 @@ async def run_integration() -> None:
     await store.start()
 
     try:
-        # Build the registry with two mock drivers.
-        registry = DriverRegistry()
+        # Build the registry with two mock drivers. Wire the bus so the
+        # registry publishes DEVICE_STATE_CHANGED on every successful
+        # execute_action (Phase 3 reconciliation).
+        registry = DriverRegistry(event_bus=bus)
         dev_a = MockDriver("dev-a")
         dev_b = MockDriver("dev-b")
         registry.register("dev-a", dev_a)

@@ -28,6 +28,12 @@ Items consciously deferred during the Phase 1–5 build. Each entry: what, why d
 - **Why deferred:** good enough for a single Pi running one `librespot` instance. Will only matter if multiple Connect endpoints have overlapping names.
 - **Revisit:** if/when the user's Spotify account picks up additional Connect endpoints whose names collide.
 
+### Spotify podcast/episode playback
+- **What:** When `SpotifyDriver` transfers playback to a `spotifyd`/`librespot` instance, podcast episodes (`spotify:episode:...`) fail to play with `404 NotFound` errors in the spotifyd journal. Music tracks work fine.
+- **Why deferred:** This is an upstream librespot limitation — librespot historically does not support podcast playback (DRM/encryption differs from music tracks). Not something we can fix in our driver.
+- **Workaround:** Disable autoplay in `spotifyd.conf` (`autoplay = false`) so an empty queue doesn't pull in episodes. Voice / scene commands that target specific music tracks or playlists work normally.
+- **Revisit:** Watch https://github.com/librespot-org/librespot for episode support, or swap to a different Connect daemon if podcast playback becomes important.
+
 ### `python-kasa` 0.10 bulb dimmer path
 - **What:** `KasaDriver.execute(SET_BRIGHTNESS)` tries the new `Light` module path first, falls back to legacy `device.set_brightness`. If a bulb supports neither, it raises.
 - **Why deferred:** all current Kasa devices in the user's setup are plugs (no DIMMER capability used yet).

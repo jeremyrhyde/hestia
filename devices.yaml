@@ -1,0 +1,70 @@
+# devices.yaml — registered hardware devices
+#
+# Copy this file to `devices.yaml` and fill in the values for the hardware
+# you actually have. The Phase 3 API entry point reads this file at startup,
+# instantiates one driver per entry, and registers it under `id`.
+#
+# The shape is validated by `schemas.DevicesConfig` (see `schemas/config.py`).
+# Each entry must specify:
+#
+#   id        Stable slug used in `/devices/{id}/...` URLs.
+#   name      Human-readable label shown in the UI.
+#   driver    One of: "relay", "kasa", "spotify".
+#   params    Driver-specific keyword arguments passed to the driver
+#             constructor.
+
+devices:
+  # ---------------------------------------------------------------------
+  # GPIO relay wired to the Pi's pin header.
+  # ---------------------------------------------------------------------
+  - id: relay-desk
+    name: Desk lamp
+    driver: relay
+    params:
+      pin: 17           # BCM pin number wired to the relay's signal line
+      active_high: true # `false` for active-low relay boards (HIGH = open)
+
+  # ---------------------------------------------------------------------
+  # Kasa smart plug on the LAN.
+  # ---------------------------------------------------------------------
+  #- id: kasa-living-room
+  #  name: Living room plug
+  #  driver: kasa
+  #  params:
+  #    host: 192.168.1.42  # IP or hostname of the Kasa device
+  #    kind: plug          # "plug" or "bulb"; bulbs gain the dimmer capability
+
+  # ---------------------------------------------------------------------
+  # Kasa dimmable bulb (uncomment if you have one).
+  # ---------------------------------------------------------------------
+  - id: kasa-bedroom-lamp
+    name: Bedroom lamp
+    driver: kasa
+    params:
+      host: 192.168.1.11
+      kind: bulb
+
+  # ---------------------------------------------------------------------
+  # Spotify Connect endpoint (e.g. spotifyd / librespot running on the Pi).
+  #
+  # Required:
+  #   client_id, client_secret  — from https://developer.spotify.com/dashboard
+  #   redirect_uri              — must be registered with the Spotify app
+  # Optional:
+  #   target_device_name        — case-insensitive substring match of the
+  #                               Connect device name; if omitted the first
+  #                               available device is used.
+  #
+  # First-run OAuth note: the first time the driver authenticates it needs
+  # interactive browser-based consent. Run the test script once on a desktop
+  # with the same creds, then copy `.spotify_cache` to the Pi for headless
+  # operation. See drivers/README.md.
+  # ---------------------------------------------------------------------
+  #- id: spotify-pi
+  #  name: Spotify on Pi
+  #  driver: spotify
+  #  params:
+  #    client_id: REPLACE_WITH_SPOTIFY_CLIENT_ID
+  #    client_secret: REPLACE_WITH_SPOTIFY_CLIENT_SECRET
+  #    redirect_uri: http://127.0.0.1:8888/callback
+  #    target_device_name: librespot
