@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0d1117">
+  <title>Hestia</title>
+  <link rel="stylesheet" href="/ui/style.css">
+  <script defer src="/ui/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body x-data="app()" x-cloak>
+
+  <!--
+    Inline icon symbol library. Lucide-derived (https://lucide.dev).
+    Reference each symbol with: <svg class="icon"><use href="#icon-<name>"/></svg>
+    Mirror file copies live in /web/icons/*.svg for git diff legibility.
+  -->
+  <svg class="sr-only" aria-hidden="true" width="0" height="0">
+    <symbol id="icon-power" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2v10"/>
+      <path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>
+    </symbol>
+    <symbol id="icon-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+      <path d="M9 18h6"/>
+      <path d="M10 22h4"/>
+    </symbol>
+    <symbol id="icon-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22v-5"/>
+      <path d="M9 8V2"/>
+      <path d="M15 8V2"/>
+      <path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>
+    </symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="6 3 20 12 6 21 6 3"/>
+    </symbol>
+    <symbol id="icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="14" y="4" width="4" height="16" rx="1"/>
+      <rect x="6" y="4" width="4" height="16" rx="1"/>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </symbol>
+    <symbol id="icon-bed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 4v16"/>
+      <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+      <path d="M2 17h20"/>
+      <path d="M6 8v9"/>
+    </symbol>
+    <symbol id="icon-sunrise" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2v8"/>
+      <path d="m4.93 10.93 1.41 1.41"/>
+      <path d="M2 18h2"/>
+      <path d="M20 18h2"/>
+      <path d="m19.07 10.93-1.41 1.41"/>
+      <path d="M22 22H2"/>
+      <path d="m8 6 4-4 4 4"/>
+      <path d="M16 18a4 4 0 0 0-8 0"/>
+    </symbol>
+    <symbol id="icon-wifi-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h.01"/>
+      <path d="M8.5 16.429a5 5 0 0 1 7 0"/>
+      <path d="M5 12.859a10 10 0 0 1 5.17-2.69"/>
+      <path d="M19 12.859a10 10 0 0 0-2.007-1.523"/>
+      <path d="M2 8.82a15 15 0 0 1 4.177-2.643"/>
+      <path d="M22 8.82a15 15 0 0 0-11.288-3.764"/>
+      <path d="m2 2 20 20"/>
+    </symbol>
+    <symbol id="icon-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect width="18" height="18" x="3" y="3" rx="2"/>
+      <path d="M7 3v18"/>
+      <path d="M3 7.5h4"/>
+      <path d="M3 12h18"/>
+      <path d="M3 16.5h4"/>
+      <path d="M17 3v18"/>
+      <path d="M17 7.5h4"/>
+      <path d="M17 16.5h4"/>
+    </symbol>
+    <symbol id="icon-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" x2="9" y1="12" y2="12"/>
+    </symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">H</span>
+      <span class="brand-name">Hestia</span>
+    </div>
+    <div class="topbar-meta">
+      <span class="topbar-clock" x-text="clockText"></span>
+      <span class="ws-indicator"
+            :class="{connected: wsConnected}"
+            :title="wsConnected ? 'Live — connected to /ws' : 'Disconnected — retrying…'"
+            aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <!--
+    Phase 4a ships ONE tab. Adding new tabs is purely additive:
+      1. push another <button> into this <nav>
+      2. drop a sibling <section x-show="tab==='<id>'"> into <main>
+    No state refactor, no router. The tab key is just a string.
+  -->
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab"
+            :aria-selected="tab==='dashboard'"
+            :class="{active: tab==='dashboard'}"
+            @click="tab='dashboard'">Dashboard</button>
+    <!-- Future tabs go here. Do NOT add them in Phase 4a. -->
+  </nav>
+
+  <!-- Boot-failure banner — shown when /health reports any devices_failed -->
+  <template x-if="boot_failures.length">
+    <div class="banner banner-warn" role="alert">
+      <svg class="icon icon-sm"><use href="#icon-wifi-off"/></svg>
+      <div class="banner-body">
+        <strong x-text="boot_failures.length + ' device(s) failed to register at startup'"></strong>
+        <ul>
+          <template x-for="f in boot_failures" :key="f.id">
+            <li>
+              <code x-text="f.id"></code>
+              <span class="banner-sep">—</span>
+              <span class="banner-error" x-text="f.error"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <main>
+    <!-- ===================== Dashboard tab ===================== -->
+    <section x-show="tab==='dashboard'" class="dashboard" role="tabpanel">
+
+      <!-- Left column: devices ------------------------------------ -->
+      <div class="col col-devices">
+        <h2 class="col-title">Devices</h2>
+
+        <template x-for="dev in devices" :key="dev.id">
+          <article class="device-row" :class="{'is-on': isOn(dev)}">
+            <div class="device-icon" aria-hidden="true">
+              <svg class="icon"><use :href="iconForDevice(dev)"/></svg>
+            </div>
+
+            <div class="device-meta">
+              <div class="device-name" x-text="dev.name"></div>
+              <div class="device-sub" x-text="deviceSubtitle(dev)"></div>
+
+              <!-- MEDIA_CONTROL: now-playing line -->
+              <template x-if="hasCap(dev, 'media_control') && (dev.state.attributes?.track || dev.state.attributes?.artist)">
+                <div class="device-track" x-text="mediaText(dev)"></div>
+              </template>
+            </div>
+
+            <div class="device-controls">
+              <!-- TOGGLE: power switch -->
+              <template x-if="hasCap(dev, 'toggle')">
+                <button class="toggle"
+                        :class="{on: isOn(dev)}"
+                        :aria-pressed="isOn(dev)"
+                        :aria-label="(isOn(dev) ? 'Turn off ' : 'Turn on ') + dev.name"
+                        @click="toggleDevice(dev)">
+                  <span class="toggle-knob"></span>
+                </button>
+              </template>
+
+              <!-- MEDIA_CONTROL: play / pause -->
+              <template x-if="hasCap(dev, 'media_control')">
+                <button class="media-btn"
+                        :aria-label="(isOn(dev) ? 'Pause ' : 'Play ') + dev.name"
+                        @click="toggleMedia(dev)">
+                  <svg class="icon">
+                    <use :href="isOn(dev) ? '#icon-pause' : '#icon-play'"/>
+                  </svg>
+                </button>
+              </template>
+            </div>
+
+            <!-- DIMMER: full-width slider beneath the row -->
+            <template x-if="hasCap(dev, 'dimmer')">
+              <div class="device-slider">
+                <input type="range" min="0" max="100" step="1"
+                       :value="dev.state.attributes?.brightness ?? 100"
+                       @change="setBrightness(dev, parseInt($event.target.value, 10))"
+                       :aria-label="dev.name + ' brightness'">
+                <span class="slider-readout"
+                      x-text="(dev.state.attributes?.brightness ?? 100) + '%'"></span>
+              </div>
+            </template>
+          </article>
+        </template>
+
+        <template x-if="devices.length === 0">
+          <p class="empty">No devices registered. Add entries to <code>devices.yaml</code>.</p>
+        </template>
+      </div>
+
+      <!-- Right column: scenes + schedules ------------------------ -->
+      <div class="col col-right">
+
+        <section class="scenes" aria-labelledby="scenes-title">
+          <h2 id="scenes-title" class="col-title">Scenes</h2>
+          <div class="scenes-grid">
+            <template x-for="scene in scenes" :key="scene.id">
+              <button class="scene-card"
+                      :class="{flash: scene._flash}"
+                      @click="executeScene(scene)"
+                      :aria-label="'Run scene ' + scene.name">
+                <div class="scene-icon" aria-hidden="true">
+                  <svg class="icon"><use :href="iconForScene(scene)"/></svg>
+                </div>
+                <div class="scene-name" x-text="scene.name"></div>
+                <div class="scene-sub" x-text="scene.description || actionsSummary(scene)"></div>
+              </button>
+            </template>
+          </div>
+          <template x-if="scenes.length === 0">
+            <p class="empty">No scenes yet.</p>
+          </template>
+        </section>
+
+        <section class="schedules" aria-labelledby="schedules-title">
+          <h2 id="schedules-title" class="col-title">Schedules</h2>
+          <ul class="schedule-list">
+            <template x-for="sch in schedules" :key="sch.id">
+              <li class="schedule-row">
+                <svg class="icon icon-sm schedule-icon" aria-hidden="true">
+                  <use href="#icon-clock"/>
+                </svg>
+                <span class="schedule-time" x-text="formatTime(sch.time)"></span>
+                <span class="schedule-name">
+                  <span class="schedule-name-text" x-text="sch.name"></span>
+                  <span class="schedule-days" x-text="formatDays(sch.days)"></span>
+                </span>
+                <button class="pill"
+                        :class="{on: sch.enabled}"
+                        :aria-pressed="sch.enabled"
+                        :aria-label="(sch.enabled ? 'Disable ' : 'Enable ') + sch.name"
+                        @click="toggleSchedule(sch)"
+                        x-text="sch.enabled ? 'On' : 'Off'"></button>
+              </li>
+            </template>
+          </ul>
+          <template x-if="schedules.length === 0">
+            <p class="empty">No schedules yet.</p>
+          </template>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- Future tabs land here. Example skeleton (commented):
+    <section x-show="tab==='settings'" class="settings" role="tabpanel">
+      ...
+    </section>
+    -->
+  </main>
+
+</body>
+</html>

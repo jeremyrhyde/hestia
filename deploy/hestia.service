@@ -1,0 +1,36 @@
+# Hestia FastAPI server — systemd user service.
+#
+# Installed by scripts/install-on-pi.sh. Paths are templated and rewritten
+# at install time to match the user's actual checkout location.
+#
+# Manual install (if not using install-on-pi.sh):
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/hestia.service ~/.config/systemd/user/
+#   sed -i "s|@HESTIA_HOME@|$HOME/hestia|g; s|@UV_BIN@|$HOME/.local/bin/uv|g" \
+#       ~/.config/systemd/user/hestia.service
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now hestia.service
+#   sudo loginctl enable-linger "$USER"   # so it starts at boot without login
+
+[Unit]
+Description=Hestia home automation server
+Documentation=https://github.com/anthropics/claude-code
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=@HESTIA_HOME@
+ExecStart=@UV_BIN@ run uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5
+
+# Pick up SPOTIFY_*, HESTIA_* etc. if you keep them in a .env file.
+EnvironmentFile=-@HESTIA_HOME@/.env
+
+# Logging — journalctl --user -u hestia.service -f
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

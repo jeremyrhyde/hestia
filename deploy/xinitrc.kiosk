@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Minimal .xinitrc for headless Ubuntu Server / Lite installs that don't
+# ship a desktop environment. Used together with deploy/getty-autologin.sh
+# to start an X session that runs ONLY the kiosk (no desktop, no taskbar).
+#
+# Installed by scripts/install-on-pi.sh --headless to ~/.xinitrc.
+
+# Lightweight window manager so chromium has something to attach to.
+# openbox is small (<5 MB), starts fast, and supports fullscreen reliably.
+exec openbox-session &
+
+# Wait briefly for openbox to register, then launch the kiosk launcher.
+sleep 1
+exec @HESTIA_HOME@/web/kiosk/start-kiosk.sh

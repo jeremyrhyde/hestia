@@ -53,6 +53,30 @@ help:
 	@echo "  make run            Start the FastAPI server (Phase 3+)"
 	@echo "  make run-dev        Start with auto-reload"
 	@echo ""
+	@echo "Pi deployment (run ON the Pi after cloning the repo):"
+	@echo "  make install-pi             Auto-detect desktop vs headless, install systemd units + kiosk"
+	@echo "  make install-pi-headless    Force headless (Ubuntu Server) — installs minimal X stack"
+	@echo "  make install-pi-no-kiosk    Server only, skip the kiosk"
+	@echo "  make uninstall-pi           Remove installed systemd units"
+	@echo "  make pi-status              Show status of hestia.service + hestia-kiosk.service"
+	@echo "  make pi-logs                Tail the server's journal"
+	@echo "  make pi-restart             Restart hestia.service"
+	@echo ""
+	@echo "Scenes & schedules (server must be running):"
+	@echo "  make seed                  Upsert default wakeup + bedtime scenes/schedules"
+	@echo "  make scene-wakeup          Upsert just the wakeup scene"
+	@echo "  make scene-bedtime         Upsert just the bedtime scene"
+	@echo "  make schedule-wakeup       Upsert wakeup schedule (07:00 weekdays)"
+	@echo "  make schedule-bedtime      Upsert bedtime schedule (23:00 daily)"
+	@echo "  make scenes-list           List all scenes"
+	@echo "  make scene-show ID=...     Show one scene"
+	@echo "  make scene-run ID=...      Trigger scene execution"
+	@echo "  make scene-delete ID=...   Delete a scene"
+	@echo "  make schedules-list        List all schedules"
+	@echo "  make schedule-show ID=...  Show one schedule"
+	@echo "  make schedule-toggle ID=... Toggle enabled flag"
+	@echo "  make schedule-delete ID=... Delete a schedule"
+	@echo ""
 	@echo "Examples:"
 	@echo "  make kasa-test KASA_HOST=192.168.1.42"
 	@echo "  make kasa-test KASA_HOST=192.168.1.43 KASA_KIND=bulb"
@@ -196,3 +220,122 @@ run-dev:
 		exit 1; \
 	fi
 	$(UV) run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# ---------------------------------------------------------------------------
+# Pi deployment (run these on the Pi itself, not the dev Mac)
+# ---------------------------------------------------------------------------
+
+.PHONY: install-pi
+install-pi:
+	./scripts/install-on-pi.sh
+
+.PHONY: install-pi-headless
+install-pi-headless:
+	./scripts/install-on-pi.sh --headless
+
+.PHONY: install-pi-no-kiosk
+install-pi-no-kiosk:
+	./scripts/install-on-pi.sh --no-kiosk
+
+.PHONY: uninstall-pi
+uninstall-pi:
+	./scripts/install-on-pi.sh --uninstall
+
+.PHONY: pi-status
+pi-status:
+	@echo "--- hestia.service ---"
+	@systemctl --user status hestia.service --no-pager -l || true
+	@echo ""
+	@echo "--- hestia-kiosk.service ---"
+	@systemctl --user status hestia-kiosk.service --no-pager -l || true
+
+.PHONY: pi-logs
+pi-logs:
+	journalctl --user -u hestia.service -f
+
+.PHONY: pi-restart
+pi-restart:
+	systemctl --user restart hestia.service
+	@echo "Restarted hestia.service"
+
+# ---------------------------------------------------------------------------
+# Scenes & schedules — convenience wrappers around scripts/*.sh
+#
+# Override the API host with HESTIA_HOST (defaults to http://localhost:8000):
+#   make scene-bedtime HESTIA_HOST=http://hera:8000
+# ---------------------------------------------------------------------------
+
+# Seed scripts: idempotent upserts (running twice is safe).
+.PHONY: scene-wakeup
+scene-wakeup:
+	./scripts/scene_creator_wakeup.sh
+
+.PHONY: scene-bedtime
+scene-bedtime:
+	./scripts/scene_creator_bedtime.sh
+
+.PHONY: scene-movie
+scene-movie:
+	./scripts/scene_creator_movie.sh
+
+.PHONY: schedule-wakeup
+schedule-wakeup:
+	./scripts/schedule_creator_wakeup.sh
+
+.PHONY: schedule-bedtime
+schedule-bedtime:
+	./scripts/schedule_creator_bedtime.sh
+
+.PHONY: seed
+seed: scene-wakeup scene-bedtime schedule-wakeup schedule-bedtime
+	@echo ""
+	@echo "Seeded default scenes + schedules."
+
+# Generic CRUD via scripts/automation.sh.
+#   make scenes-list
+#   make scene-show ID=bedtime
+#   make scene-delete ID=bedtime
+#   make scene-run ID=bedtime
+#   make schedules-list
+#   make schedule-show ID=bedtime-nightly
+#   make schedule-delete ID=bedtime-nightly
+#   make schedule-toggle ID=bedtime-nightly
+ID ?=
+
+.PHONY: scenes-list
+scenes-list:
+	@./scripts/automation.sh scenes list
+
+.PHONY: scene-show
+scene-show:
+	@if [ -z "$(ID)" ]; then echo "ERROR: pass ID=<scene-id>"; exit 1; fi
+	@./scripts/automation.sh scenes show $(ID)
+
+.PHONY: scene-delete
+scene-delete:
+	@if [ -z "$(ID)" ]; then echo "ERROR: pass ID=<scene-id>"; exit 1; fi
+	@./scripts/automation.sh scenes delete $(ID)
+
+.PHONY: scene-run
+scene-run:
+	@if [ -z "$(ID)" ]; then echo "ERROR: pass ID=<scene-id>"; exit 1; fi
+	@./scripts/automation.sh scenes run $(ID)
+
+.PHONY: schedules-list
+schedules-list:
+	@./scripts/automation.sh schedules list
+
+.PHONY: schedule-show
+schedule-show:
+	@if [ -z "$(ID)" ]; then echo "ERROR: pass ID=<schedule-id>"; exit 1; fi
+	@./scripts/automation.sh schedules show $(ID)
+
+.PHONY: schedule-delete
+schedule-delete:
+	@if [ -z "$(ID)" ]; then echo "ERROR: pass ID=<schedule-id>"; exit 1; fi
+	@./scripts/automation.sh schedules delete $(ID)
+
+.PHONY: schedule-toggle
+schedule-toggle:
+	@if [ -z "$(ID)" ]; then echo "ERROR: pass ID=<schedule-id>"; exit 1; fi
+	@./scripts/automation.sh schedules toggle $(ID)

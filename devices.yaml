@@ -17,31 +17,43 @@ devices:
   # ---------------------------------------------------------------------
   # GPIO relay wired to the Pi's pin header.
   # ---------------------------------------------------------------------
-  - id: relay-desk
-    name: Desk lamp
-    driver: relay
-    params:
-      pin: 17           # BCM pin number wired to the relay's signal line
-      active_high: true # `false` for active-low relay boards (HIGH = open)
+  # - id: relay-desk
+  #   name: Desk lamp
+  #   driver: relay
+  #   params:
+  #     pin: 17           # BCM pin number wired to the relay's signal line
+  #     active_high: true # `false` for active-low relay boards (HIGH = open)
 
   # ---------------------------------------------------------------------
   # Kasa smart plug on the LAN.
   # ---------------------------------------------------------------------
-  #- id: kasa-living-room
-  #  name: Living room plug
-  #  driver: kasa
-  #  params:
-  #    host: 192.168.1.42  # IP or hostname of the Kasa device
-  #    kind: plug          # "plug" or "bulb"; bulbs gain the dimmer capability
+  - id: bedroom-light
+    name: Bedroom Light
+    driver: kasa
+    params:
+      host: 192.168.1.32  # IP or hostname of the Kasa device
+      kind: plug          # "plug" or "bulb"; bulbs gain the dimmer capability
 
   # ---------------------------------------------------------------------
   # Kasa dimmable bulb (uncomment if you have one).
   # ---------------------------------------------------------------------
-  - id: kasa-bedroom-lamp
-    name: Bedroom lamp
+  - id: kitchen-light
+    name: Kitchen Light
     driver: kasa
     params:
       host: 192.168.1.11
+      kind: bulb
+  - id: living-room-light-1
+    name: Living Room Light
+    driver: kasa
+    params:
+      host: 192.168.1.6
+      kind: bulb
+  - id: living-room-light-2
+    name: Living Room Light
+    driver: kasa
+    params:
+      host: 192.168.1.7
       kind: bulb
 
   # ---------------------------------------------------------------------

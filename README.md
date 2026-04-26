@@ -50,9 +50,58 @@ uv run pytest
 uv run pytest tests/test_schemas.py -v
 ```
 
+## Run the dev server
+
+```bash
+make run-dev               # uvicorn on :8000 with --reload
+# UI:    http://localhost:8000/ui/
+# API:   http://localhost:8000/docs
+# Health: http://localhost:8000/health
+```
+
+## Pi deployment
+
+After cloning the repo onto the Pi (`git clone ...`) and installing `uv`:
+
+```bash
+cd ~/hestia
+make install-pi
+```
+
+The install script:
+
+- runs `uv sync` to build the venv
+- writes `~/.config/systemd/user/hestia.service` (the FastAPI server)
+- writes `~/.config/systemd/user/hestia-kiosk.service` (Chromium fullscreen)
+- installs `chromium-browser` and `unclutter` via apt if missing
+- enables linger (`loginctl enable-linger`) so services start at boot
+- on **headless Ubuntu Server**, also installs a minimal X stack
+  (`xserver-xorg`, `xinit`, `openbox`), enables tty1 auto-login, and adds
+  `~/.bash_profile` hooks so the Pi boots straight into the kiosk
+
+Useful follow-up commands:
+
+```bash
+make pi-status      # status of both services
+make pi-logs        # tail the server's journal
+make pi-restart     # restart hestia.service
+make uninstall-pi   # remove the units
+```
+
+Force a specific install mode if auto-detection picks the wrong one:
+
+```bash
+make install-pi-headless    # Ubuntu Server / no desktop
+make install-pi-no-kiosk    # server only (e.g., a headless API host with
+                            # the touchscreen on a separate Pi)
+```
+
+For full deployment details (boot sequence, kiosk troubleshooting, OS-specific
+notes) see `web/README.md`.
+
 ## Status
 
-Phase 1 (foundation) is complete: schemas, driver base class, registry,
-config loader, and tests are in place. Subsequent phases (drivers, core
-services, API, interfaces) build on top — see `home-auto-build-plan.md` for
-the full plan.
+Phases 1–4a complete: foundation, drivers, core services, API + WebSocket,
+touchscreen UI. Pi deployment scripts are in place. Phase 4b (voice) and
+Phase 5 (final integration / soak) still ahead — see
+`docs/home-auto-build-plan.md`.

@@ -22,7 +22,22 @@ devices:
     driver: relay
     params:
       pin: 17           # BCM pin number wired to the relay's signal line
-      active_high: true # `false` for active-low relay boards (HIGH = open)
+      active_high: true # See note below.
+
+  # Active-high vs active-low — most common config mistake:
+  #
+  # If `turn_on` doesn't make the relay click but `turn_off` does (or
+  # vice-versa), the board is the opposite polarity from what you set.
+  # Most cheap blue/black optoisolated relay boards (1/2/4 channel,
+  # with a JD-VCC jumper) are ACTIVE-LOW: pulling the signal pin LOW
+  # energizes the relay. For those, set `active_high: false`.
+  #
+  # Quick test on the Pi (replace 17 with your pin):
+  #   sudo python3 -c "import lgpio,time; h=lgpio.gpiochip_open(0); \
+  #     lgpio.gpio_write(h, 17, 0); time.sleep(2); \
+  #     lgpio.gpio_write(h, 17, 1); time.sleep(2); lgpio.gpiochip_close(h)"
+  # If the click happens on `0`, set active_high: false.
+  # If the click happens on `1`, set active_high: true.
 
   # ---------------------------------------------------------------------
   # Kasa smart plug on the LAN.
