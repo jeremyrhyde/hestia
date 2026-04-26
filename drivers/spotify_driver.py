@@ -322,6 +322,28 @@ class SpotifyDriver(DeviceDriver):
             self._mock_state["is_playing"] = True
             return
         device_id = await self._resolve_target_device_id()
+        if device_id is None:
+            logger.warning(
+                "SpotifyDriver(%s): play skipped — no target device resolved",
+                self._id,
+            )
+            return
+
+        # Prefer transfer_playback: it moves the existing playback session to
+        # the target device. start_playback only resumes an already-playing
+        # context — if nothing was playing, it 204s silently with no audio.
+        try:
+            await asyncio.to_thread(
+                client.transfer_playback, device_id, force_play=True
+            )
+            return
+        except Exception as exc:  # noqa: BLE001
+            logger.info(
+                "SpotifyDriver(%s): transfer_playback failed (%r); falling back to start_playback",
+                self._id,
+                exc,
+            )
+
         try:
             await asyncio.to_thread(client.start_playback, device_id=device_id)
         except Exception as exc:  # noqa: BLE001
