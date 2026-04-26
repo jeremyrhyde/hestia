@@ -465,16 +465,23 @@ main {
 
 .scene-card {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  min-height: 110px;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  min-height: 64px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
   text-align: left;
   transition: transform var(--transition-fast), border-color var(--transition), background var(--transition);
+}
+.scene-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;        /* lets long names ellipsize cleanly */
+  flex: 1;
 }
 @media (hover: hover) {
   .scene-card:hover { border-color: var(--color-border); background: var(--color-surface-2); }
@@ -494,6 +501,7 @@ main {
   place-items: center;
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
   border-radius: var(--radius-md);
   background: var(--color-surface-2);
   color: var(--color-text-muted);
@@ -501,6 +509,9 @@ main {
 .scene-name {
   font-weight: 600;
   font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .scene-sub {
   font-size: 12px;

@@ -213,8 +213,10 @@
                 <div class="scene-icon" aria-hidden="true">
                   <svg class="icon"><use :href="iconForScene(scene)"/></svg>
                 </div>
-                <div class="scene-name" x-text="scene.name"></div>
-                <div class="scene-sub" x-text="scene.description || actionsSummary(scene)"></div>
+                <div class="scene-text">
+                  <div class="scene-name" x-text="scene.name"></div>
+                  <div class="scene-sub" x-text="scene.description || actionsSummary(scene)"></div>
+                </div>
               </button>
             </template>
           </div>
