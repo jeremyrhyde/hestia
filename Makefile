@@ -15,6 +15,7 @@ KASA_KIND ?= plug
 SPOTIFY_CLIENT_ID ?=
 SPOTIFY_CLIENT_SECRET ?=
 SPOTIFY_REDIRECT_URI ?= http://127.0.0.1:8888/callback
+SPOTIFY_TARGET_DEVICE ?=
 
 .DEFAULT_GOAL := help
 
@@ -54,6 +55,7 @@ help:
 	@echo "  make kasa-test KASA_HOST=192.168.1.42"
 	@echo "  make kasa-test KASA_HOST=192.168.1.43 KASA_KIND=bulb"
 	@echo "  make spotify-test SPOTIFY_CLIENT_ID=abc SPOTIFY_CLIENT_SECRET=xyz"
+	@echo "  make spotify-test SPOTIFY_CLIENT_ID=abc SPOTIFY_CLIENT_SECRET=xyz SPOTIFY_TARGET_DEVICE=RaspberryPi"
 
 # ---------------------------------------------------------------------------
 # Setup / build
@@ -149,9 +151,15 @@ spotify-test:
 		exit 1; \
 	fi
 	@echo "Running Spotify hardware test (first run requires browser OAuth)"
+	@if [ -z "$(SPOTIFY_TARGET_DEVICE)" ]; then \
+		echo "  (no SPOTIFY_TARGET_DEVICE set — driver will pick the first available device)"; \
+	else \
+		echo "  Targeting device: $(SPOTIFY_TARGET_DEVICE)"; \
+	fi
 	SPOTIFY_CLIENT_ID=$(SPOTIFY_CLIENT_ID) \
 	SPOTIFY_CLIENT_SECRET=$(SPOTIFY_CLIENT_SECRET) \
 	SPOTIFY_REDIRECT_URI=$(SPOTIFY_REDIRECT_URI) \
+	SPOTIFY_TARGET_DEVICE=$(SPOTIFY_TARGET_DEVICE) \
 	$(PYTHON) tests/test_spotify_driver.py
 
 .PHONY: hardware-test
