@@ -27,11 +27,17 @@ devices:
   # ---------------------------------------------------------------------
   # Kasa smart plug on the LAN.
   # ---------------------------------------------------------------------
-  - id: bedroom-light
-    name: Bedroom Light
+  - id: upstairs-light
+    name: Upstairs Light
     driver: kasa
     params:
-      host: 192.168.1.32  # IP or hostname of the Kasa device
+      host: 192.168.1.2  # IP or hostname of the Kasa device
+      kind: plug          # "plug" or "bulb"; bulbs gain the dimmer capability
+  - id: ceiling-light
+    name: Ceiling Light
+    driver: kasa
+    params:
+      host: 192.168.1.6  # IP or hostname of the Kasa device
       kind: plug          # "plug" or "bulb"; bulbs gain the dimmer capability
 
   # ---------------------------------------------------------------------
@@ -41,13 +47,13 @@ devices:
     name: Kitchen Light
     driver: kasa
     params:
-      host: [192.168.1.11, 192.168.1.8]
+      host: [192.168.1.4, 192.168.1.8]
       kind: bulb
   - id: living-room-light
     name: Living Room Light
     driver: kasa
     params:
-      host: [192.168.1.6, 192.168.1.7]
+      host: [192.168.1.5, 192.168.1.7]
       kind: bulb
 
   # ---------------------------------------------------------------------
