@@ -380,10 +380,14 @@ main {
      With a ~360px column (800px panel) minus gaps each tile is ~81px wide
      (~57px inner after padding), so we can grow the icon to 40px and still
      leave room for the label. */
-  .tile-row {
+  /* Scoped to .dashboard for higher specificity than the base `.tile-row`
+     rule, which is defined LATER in the file — without the extra class the
+     base rule would win on source order and keep the 84px floor (only 3 fit).
+     `.dashboard .tile-row` (0,2,0) beats `.tile-row` (0,1,0). */
+  .dashboard .tile-row {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .tile .tile-icon {
+  .dashboard .tile .tile-icon {
     width: 40px;
     height: 40px;
   }
