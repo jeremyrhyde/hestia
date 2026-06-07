@@ -331,6 +331,16 @@ main {
    wide. Layout: Lights + Scenes stacked on the left, Schedules filling the tall
    right column to use the otherwise-empty horizontal space. */
 @media (orientation: landscape) and (min-width: 640px) {
+  /* Reclaim a little vertical space on the short touchscreen (480px tall):
+     the default 24px top+bottom main padding pushes the dashboard ~5px past
+     the viewport, producing a tiny scrollbar. Trim top+bottom to 16px each
+     (recovers 16px) — keeps a clean margin and the scroll still kicks in once
+     there's genuinely more content than fits. Sides keep their safe-area
+     padding. */
+  main {
+    padding-top: var(--space-4);
+    padding-bottom: calc(var(--space-4) + var(--safe-bottom));
+  }
   /* Let the dashboard panel use the full touchscreen width instead of the
      760px reading cap (which is right for tall text-y tabs, wrong for the
      two-column wall view). Scoped to the dashboard panel so the Scenes /
