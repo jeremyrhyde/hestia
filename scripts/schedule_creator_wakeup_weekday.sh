@@ -6,8 +6,8 @@ source "$(dirname "$0")/_lib.sh"
 # Time format: "HH:MM" 24-hour local time.
 # Days: omit for every day, or list lowercase 3-letter abbrevs.
 upsert_schedule '{
-  "id": "wakeup-weekends",
-  "name": "Wakeup (weekends)",
+  "id": "wakeup-weekdays",
+  "name": "Wakeup (weekdays)",
   "scene_id": "wakeup",
   "time": "07:45",
   "days": ["mon", "tue", "wed", "thu", "fri"],
