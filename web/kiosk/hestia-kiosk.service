@@ -1,6 +1,6 @@
 # Hestia touchscreen kiosk — systemd user service.
 #
-# Installed by scripts/install-on-pi.sh which rewrites @HESTIA_HOME@ to the
+# Installed by scripts/install-kiosk-on-pi.sh which rewrites @HESTIA_HOME@ to the
 # actual checkout path. Two install paths exist depending on what your Pi
 # is running:
 #

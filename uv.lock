@@ -611,6 +611,7 @@ dependencies = [
     { name = "python-kasa" },
     { name = "pyyaml" },
     { name = "spotipy" },
+    { name = "tzdata" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "websockets" },
 ]
@@ -632,6 +633,7 @@ requires-dist = [
     { name = "python-kasa" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "spotipy", specifier = ">=2.26.0" },
+    { name = "tzdata" },
     { name = "uvicorn", extras = ["standard"] },
     { name = "websockets" },
 ]

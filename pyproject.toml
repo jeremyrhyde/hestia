@@ -15,6 +15,13 @@ dependencies = [
     'gpiozero ; sys_platform == "linux"',
     "spotipy>=2.26.0",
     "pyyaml>=6.0.3",
+    # Bundled IANA tz database. Required on Linux (incl. Pi OS): the system
+    # tzdata omits legacy single-name zones like EST / PST8PDT, which
+    # python-kasa feeds straight into ZoneInfo() when it reads a device's
+    # timezone — without this, get_info() raises ZoneInfoNotFound and the
+    # device fails its initial probe. zoneinfo checks this package before
+    # the system files, so it covers those keys everywhere.
+    "tzdata",
 ]
 
 [dependency-groups]

@@ -1,6 +1,6 @@
 # Hestia FastAPI server — systemd user service.
 #
-# Installed by scripts/install-on-pi.sh. Paths are templated and rewritten
+# Installed by scripts/install-server-on-pi.sh. Paths are templated and rewritten
 # at install time to match the user's actual checkout location.
 #
 # Manual install (if not using install-on-pi.sh):

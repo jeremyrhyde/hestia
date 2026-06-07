@@ -225,21 +225,28 @@ run-dev:
 # Pi deployment (run these on the Pi itself, not the dev Mac)
 # ---------------------------------------------------------------------------
 
+# Server + kiosk are now separate installers. Run the server one first on
+# the Pi, then the kiosk one on whichever Pi has the attached display.
+.PHONY: install-pi-server
+install-pi-server:
+	./scripts/install-server-on-pi.sh
+
+.PHONY: install-pi-kiosk
+install-pi-kiosk:
+	./scripts/install-kiosk-on-pi.sh
+
+.PHONY: install-pi-kiosk-headless
+install-pi-kiosk-headless:
+	./scripts/install-kiosk-on-pi.sh --headless
+
+# Convenience: full install (server + kiosk) in one go.
 .PHONY: install-pi
-install-pi:
-	./scripts/install-on-pi.sh
-
-.PHONY: install-pi-headless
-install-pi-headless:
-	./scripts/install-on-pi.sh --headless
-
-.PHONY: install-pi-no-kiosk
-install-pi-no-kiosk:
-	./scripts/install-on-pi.sh --no-kiosk
+install-pi: install-pi-server install-pi-kiosk
 
 .PHONY: uninstall-pi
 uninstall-pi:
-	./scripts/install-on-pi.sh --uninstall
+	./scripts/install-kiosk-on-pi.sh --uninstall
+	./scripts/install-server-on-pi.sh --uninstall
 
 .PHONY: pi-status
 pi-status:
