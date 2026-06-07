@@ -375,6 +375,18 @@ main {
        height, instead of pushing the whole dashboard taller. */
     min-height: 0;
   }
+  /* In the narrow landscape left column the auto-fill 84px floor only fits 3
+     tiles across; pin to exactly 4 columns so the floor can't force a wrap.
+     With a ~360px column (800px panel) minus gaps each tile is ~81px wide
+     (~57px inner after padding), so we can grow the icon to 40px and still
+     leave room for the label. */
+  .tile-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .tile .tile-icon {
+    width: 40px;
+    height: 40px;
+  }
   .dash-block--schedules .schedule-list {
     /* min-width:0 so the rows (which have a wide min-content) don't re-inflate
        this column either. */
