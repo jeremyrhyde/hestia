@@ -135,6 +135,29 @@ function app() {
       return '#icon-power';
     },
 
+    // Lights = dimmable bulbs OR toggle-only devices that read as lights.
+    // Used by the compact Dashboard "Lights" row. We treat any device with a
+    // dimmer as a bulb; Kasa plugs driving a lamp are toggle-only and still
+    // belong here, so we include toggle-capable Kasa/relay devices too.
+    // A method (not a getter): Alpine's x-for re-evaluates method calls on
+    // every reactive pass and registers `devices` as a dependency, so the
+    // row populates once the device fetch resolves. A native getter can miss
+    // that dependency and render once against an empty list.
+    lights() {
+      return this.devices.filter((d) => {
+        if (this.hasCap(d, 'dimmer')) return true;
+        const drv = (d.driver_name || '').toLowerCase();
+        return this.hasCap(d, 'toggle') && (drv.includes('kasa') || drv.includes('relay'));
+      });
+    },
+
+    // Compact-view icon: prefer the bulb glyph for dimmable lights so the
+    // Dashboard reads as lights (iconForDevice shows a plug for all Kasa).
+    iconForLight(dev) {
+      if (this.hasCap(dev, 'dimmer')) return '#icon-bulb';
+      return '#icon-bulb';
+    },
+
     iconForScene(scene) {
       const id = (scene.id || '').toLowerCase();
       const name = (scene.name || '').toLowerCase();

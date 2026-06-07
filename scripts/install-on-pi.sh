@@ -3,12 +3,17 @@
 #
 # Detects whether the system has a graphical session, installs the
 # appropriate systemd user services, optionally bootstraps a minimal X
-# stack for headless Ubuntu Server installs, and starts everything.
+# stack for headless installs, and starts everything.
+#
+# RECOMMENDED BASE OS: Raspberry Pi OS Lite (headless, no desktop). It ships
+# no display system, so --headless mode adds only a bare X stack + Chromium
+# — far lighter on a 2-4GB Pi 4 than a full desktop. Ubuntu Server also
+# works via the same --headless path.
 #
 # Usage:
 #   ./scripts/install-on-pi.sh                  # auto-detect mode
 #   ./scripts/install-on-pi.sh --desktop        # force desktop-session mode
-#   ./scripts/install-on-pi.sh --headless       # force headless (Ubuntu Server) mode
+#   ./scripts/install-on-pi.sh --headless       # force headless (Pi OS Lite / Ubuntu Server)
 #   ./scripts/install-on-pi.sh --no-kiosk       # only install the server, skip the kiosk
 #   ./scripts/install-on-pi.sh --uninstall      # remove all installed units
 #
@@ -70,6 +75,18 @@ render_unit() {
 }
 
 ensure_apt_packages() {
+  # ensure_apt_packages [--no-recommends] <pkg>...
+  #
+  # On a RAM-constrained kiosk Pi we install the X stack with
+  # --no-install-recommends so apt does NOT pull in the dozens of
+  # "recommended" desktop packages (fonts, GTK themes, printing,
+  # accessibility daemons) that a bare xserver-xorg would otherwise drag
+  # in. This is the single biggest disk/RAM win on Raspberry Pi OS Lite.
+  local apt_opts=()
+  if [[ "${1:-}" == "--no-recommends" ]]; then
+    apt_opts+=(--no-install-recommends)
+    shift
+  fi
   local pkgs=("$@")
   local missing=()
   for p in "${pkgs[@]}"; do
@@ -80,7 +97,7 @@ ensure_apt_packages() {
   if [[ ${#missing[@]} -gt 0 ]]; then
     echo "  installing apt packages: ${missing[*]}"
     sudo apt-get update -qq
-    sudo apt-get install -y "${missing[@]}"
+    sudo apt-get install -y "${apt_opts[@]}" "${missing[@]}"
   fi
 }
 
@@ -155,8 +172,13 @@ if [[ "$INSTALL_KIOSK" -eq 1 ]]; then
   resolved_mode="$(detect_mode)"
   echo "  detected mode: $resolved_mode"
   if [[ "$resolved_mode" == "headless" ]]; then
-    echo "  installing minimal X stack (xserver-xorg, openbox, xinit)..."
-    ensure_apt_packages xserver-xorg xinit openbox
+    echo "  installing minimal X stack (xserver-xorg, matchbox-window-manager, xinit)..."
+    # --no-recommends keeps this a bare display stack on Pi OS Lite — no
+    # desktop bloat. matchbox-window-manager is a tiny, kiosk-oriented WM
+    # (smaller than openbox) that reliably gives Chromium a fullscreen
+    # surface to attach to.
+    ensure_apt_packages --no-recommends \
+      xserver-xorg xinit x11-xserver-utils matchbox-window-manager
     render_unit "$HESTIA_HOME/deploy/xinitrc.kiosk" "$USER_HOME/.xinitrc"
     chmod +x "$USER_HOME/.xinitrc"
 

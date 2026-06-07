@@ -106,17 +106,30 @@
   </header>
 
   <!--
-    Phase 4a ships ONE tab. Adding new tabs is purely additive:
+    Tabs split the dashboard into Devices / Scenes / Schedules. Adding a new
+    tab is purely additive:
       1. push another <button> into this <nav>
       2. drop a sibling <section x-show="tab==='<id>'"> into <main>
-    No state refactor, no router. The tab key is just a string.
+    No state refactor, no router. The tab key is just a string (see app.js
+    `tab:` default).
   -->
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button role="tab"
             :aria-selected="tab==='dashboard'"
             :class="{active: tab==='dashboard'}"
             @click="tab='dashboard'">Dashboard</button>
-    <!-- Future tabs go here. Do NOT add them in Phase 4a. -->
+    <button role="tab"
+            :aria-selected="tab==='devices'"
+            :class="{active: tab==='devices'}"
+            @click="tab='devices'">Devices</button>
+    <button role="tab"
+            :aria-selected="tab==='scenes'"
+            :class="{active: tab==='scenes'}"
+            @click="tab='scenes'">Scenes</button>
+    <button role="tab"
+            :aria-selected="tab==='schedules'"
+            :class="{active: tab==='schedules'}"
+            @click="tab='schedules'">Schedules</button>
   </nav>
 
   <!-- Boot-failure banner — shown when /health reports any devices_failed -->
@@ -139,10 +152,83 @@
   </template>
 
   <main>
-    <!-- ===================== Dashboard tab ===================== -->
-    <section x-show="tab==='dashboard'" class="dashboard" role="tabpanel">
+    <!-- ===================== Dashboard tab (compact overview) ===================== -->
+    <section x-show="tab==='dashboard'" class="tab-panel dashboard" role="tabpanel"
+             aria-label="Dashboard">
 
-      <!-- Left column: devices ------------------------------------ -->
+      <!-- Lights: compact lit-button grid. Tapping toggles the light; the
+           button glows when on. -->
+      <section class="dash-block" aria-labelledby="dash-lights-title">
+        <h2 id="dash-lights-title" class="col-title">Lights</h2>
+        <div class="tile-row">
+          <template x-for="dev in lights()" :key="dev.id">
+            <button class="tile"
+                    :class="{on: isOn(dev)}"
+                    :aria-pressed="isOn(dev)"
+                    :aria-label="(isOn(dev) ? 'Turn off ' : 'Turn on ') + dev.name"
+                    @click="toggleDevice(dev)">
+              <svg class="icon tile-icon"><use :href="iconForLight(dev)"/></svg>
+              <span class="tile-label" x-text="dev.name"></span>
+            </button>
+          </template>
+          <template x-if="lights().length === 0">
+            <p class="empty">No lights.</p>
+          </template>
+        </div>
+      </section>
+
+      <!-- Scenes: compact lit-button grid (icon + name). Tapping runs it. -->
+      <section class="dash-block" aria-labelledby="dash-scenes-title">
+        <h2 id="dash-scenes-title" class="col-title">Scenes</h2>
+        <div class="tile-row">
+          <template x-for="scene in scenes" :key="scene.id">
+            <button class="tile"
+                    :class="{flash: scene._flash}"
+                    :aria-label="'Run scene ' + scene.name"
+                    @click="executeScene(scene)">
+              <svg class="icon tile-icon"><use :href="iconForScene(scene)"/></svg>
+              <span class="tile-label" x-text="scene.name"></span>
+            </button>
+          </template>
+          <template x-if="scenes.length === 0">
+            <p class="empty">No scenes yet.</p>
+          </template>
+        </div>
+      </section>
+
+      <!-- Schedules: full long-format rows beneath. -->
+      <section class="dash-block" aria-labelledby="dash-sched-title">
+        <h2 id="dash-sched-title" class="col-title">Schedules</h2>
+        <ul class="schedule-list">
+          <template x-for="sch in schedules" :key="sch.id">
+            <li class="schedule-row">
+              <svg class="icon icon-sm schedule-icon" aria-hidden="true">
+                <use href="#icon-clock"/>
+              </svg>
+              <span class="schedule-time" x-text="formatTime(sch.time)"></span>
+              <span class="schedule-name">
+                <span class="schedule-name-text" x-text="sch.name"></span>
+                <span class="schedule-days" x-text="formatDays(sch.days)"></span>
+              </span>
+              <button class="pill"
+                      :class="{on: sch.enabled}"
+                      :aria-pressed="sch.enabled"
+                      :aria-label="(sch.enabled ? 'Disable ' : 'Enable ') + sch.name"
+                      @click="toggleSchedule(sch)"
+                      x-text="sch.enabled ? 'On' : 'Off'"></button>
+            </li>
+          </template>
+        </ul>
+        <template x-if="schedules.length === 0">
+          <p class="empty">No schedules yet.</p>
+        </template>
+      </section>
+    </section>
+
+    <!-- ===================== Devices tab ===================== -->
+    <section x-show="tab==='devices'" class="tab-panel" role="tabpanel"
+             aria-label="Devices">
+
       <div class="col col-devices">
         <h2 class="col-title">Devices</h2>
 
@@ -204,68 +290,65 @@
           <p class="empty">No devices registered. Add entries to <code>devices.yaml</code>.</p>
         </template>
       </div>
+    </section>
 
-      <!-- Right column: scenes + schedules ------------------------ -->
-      <div class="col col-right">
-
-        <section class="scenes" aria-labelledby="scenes-title">
-          <h2 id="scenes-title" class="col-title">Scenes</h2>
-          <div class="scenes-grid">
-            <template x-for="scene in scenes" :key="scene.id">
-              <button class="scene-card"
-                      :class="{flash: scene._flash}"
-                      @click="executeScene(scene)"
-                      :aria-label="'Run scene ' + scene.name">
-                <div class="scene-icon" aria-hidden="true">
-                  <svg class="icon"><use :href="iconForScene(scene)"/></svg>
-                </div>
-                <div class="scene-text">
-                  <div class="scene-name" x-text="scene.name"></div>
-                  <div class="scene-sub" x-text="scene.description || actionsSummary(scene)"></div>
-                </div>
-              </button>
-            </template>
-          </div>
-          <template x-if="scenes.length === 0">
-            <p class="empty">No scenes yet.</p>
+    <!-- ===================== Scenes tab ===================== -->
+    <section x-show="tab==='scenes'" class="tab-panel" role="tabpanel"
+             aria-label="Scenes">
+      <div class="scenes" aria-labelledby="scenes-title">
+        <h2 id="scenes-title" class="col-title">Scenes</h2>
+        <div class="scenes-grid">
+          <template x-for="scene in scenes" :key="scene.id">
+            <button class="scene-card"
+                    :class="{flash: scene._flash}"
+                    @click="executeScene(scene)"
+                    :aria-label="'Run scene ' + scene.name">
+              <div class="scene-icon" aria-hidden="true">
+                <svg class="icon"><use :href="iconForScene(scene)"/></svg>
+              </div>
+              <div class="scene-text">
+                <div class="scene-name" x-text="scene.name"></div>
+                <div class="scene-sub" x-text="scene.description || actionsSummary(scene)"></div>
+              </div>
+            </button>
           </template>
-        </section>
-
-        <section class="schedules" aria-labelledby="schedules-title">
-          <h2 id="schedules-title" class="col-title">Schedules</h2>
-          <ul class="schedule-list">
-            <template x-for="sch in schedules" :key="sch.id">
-              <li class="schedule-row">
-                <svg class="icon icon-sm schedule-icon" aria-hidden="true">
-                  <use href="#icon-clock"/>
-                </svg>
-                <span class="schedule-time" x-text="formatTime(sch.time)"></span>
-                <span class="schedule-name">
-                  <span class="schedule-name-text" x-text="sch.name"></span>
-                  <span class="schedule-days" x-text="formatDays(sch.days)"></span>
-                </span>
-                <button class="pill"
-                        :class="{on: sch.enabled}"
-                        :aria-pressed="sch.enabled"
-                        :aria-label="(sch.enabled ? 'Disable ' : 'Enable ') + sch.name"
-                        @click="toggleSchedule(sch)"
-                        x-text="sch.enabled ? 'On' : 'Off'"></button>
-              </li>
-            </template>
-          </ul>
-          <template x-if="schedules.length === 0">
-            <p class="empty">No schedules yet.</p>
-          </template>
-        </section>
-
+        </div>
+        <template x-if="scenes.length === 0">
+          <p class="empty">No scenes yet.</p>
+        </template>
       </div>
     </section>
 
-    <!-- Future tabs land here. Example skeleton (commented):
-    <section x-show="tab==='settings'" class="settings" role="tabpanel">
-      ...
+    <!-- ===================== Schedules tab ===================== -->
+    <section x-show="tab==='schedules'" class="tab-panel" role="tabpanel"
+             aria-label="Schedules">
+      <div class="schedules" aria-labelledby="schedules-title">
+        <h2 id="schedules-title" class="col-title">Schedules</h2>
+        <ul class="schedule-list">
+          <template x-for="sch in schedules" :key="sch.id">
+            <li class="schedule-row">
+              <svg class="icon icon-sm schedule-icon" aria-hidden="true">
+                <use href="#icon-clock"/>
+              </svg>
+              <span class="schedule-time" x-text="formatTime(sch.time)"></span>
+              <span class="schedule-name">
+                <span class="schedule-name-text" x-text="sch.name"></span>
+                <span class="schedule-days" x-text="formatDays(sch.days)"></span>
+              </span>
+              <button class="pill"
+                      :class="{on: sch.enabled}"
+                      :aria-pressed="sch.enabled"
+                      :aria-label="(sch.enabled ? 'Disable ' : 'Enable ') + sch.name"
+                      @click="toggleSchedule(sch)"
+                      x-text="sch.enabled ? 'On' : 'Off'"></button>
+            </li>
+          </template>
+        </ul>
+        <template x-if="schedules.length === 0">
+          <p class="empty">No schedules yet.</p>
+        </template>
+      </div>
     </section>
-    -->
   </main>
 
 </body>

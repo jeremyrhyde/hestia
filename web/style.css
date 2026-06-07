@@ -49,6 +49,20 @@
 
   --font-stack: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* iOS safe-area insets.
+     On iPhone, with <meta viewport-fit=cover> + apple-mobile-web-app-status-bar-
+     style=black-translucent (see index.html), the OS status bar (clock, battery,
+     Wi-Fi, signal) is drawn ON TOP of our content. env(safe-area-inset-*) exposes
+     how much space each system overlay occupies — the notch / Dynamic Island at
+     top, the home indicator at bottom, and the rounded corners / camera housing
+     in landscape. We capture them as tokens here and apply them to the topbar and
+     main content below. On every other platform (kiosk Pi, desktop, Android) env()
+     resolves to 0, so these are zero-cost no-ops there. */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
 }
 
 /* Hide body until Alpine boots so x-show/x-if/x-text don't flash raw markup. */
@@ -80,6 +94,10 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  width: 100%;
+  /* Never allow the page to scroll sideways. Content that would overflow is
+     clamped by the grid column below; this is the final backstop. */
+  overflow-x: hidden;
   /* Touchscreen: stop pull-to-refresh and double-tap zoom flickers. */
   touch-action: manipulation;
   overscroll-behavior: none;
@@ -87,6 +105,13 @@ html, body {
 
 body {
   display: grid;
+  /* CRITICAL: pin to a single column of minmax(0, 1fr). Without an explicit
+     column, the grid's implicit column defaults to `auto`, which sizes to the
+     widest child's MIN-CONTENT — a long unbreakable device/scene name or code
+     path then pushes the whole page wider than the phone viewport, causing the
+     horizontal scroll. minmax(0, …) lets the column shrink below content size
+     so children ellipsize instead of overflowing. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto 1fr;
   grid-template-areas:
     "topbar"
@@ -141,10 +166,21 @@ ul { list-style: none; padding: 0; margin: 0; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-6);
+  /* Add the iOS safe-area insets ON TOP of the normal padding so the brand
+     and clock sit clear of the status bar (top) and the landscape notch /
+     rounded corners (sides). The surface background fills the padded region,
+     so the bar reads as one continuous strip behind the system icons rather
+     than the status bar overlapping the clock. */
+  padding:
+    calc(var(--space-3) + var(--safe-top))
+    calc(var(--space-6) + var(--safe-right))
+    var(--space-3)
+    calc(var(--space-6) + var(--safe-left));
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-soft);
-  min-height: 56px;
+  /* Grow the bar's min height by the status-bar inset too, so a short bar
+     doesn't collapse under the notch. */
+  min-height: calc(56px + var(--safe-top));
 }
 .brand {
   display: flex;
@@ -194,7 +230,13 @@ ul { list-style: none; padding: 0; margin: 0; }
   grid-area: tabs;
   display: flex;
   gap: var(--space-1);
-  padding: var(--space-3) var(--space-6) 0;
+  /* Match the topbar's horizontal safe-area padding so the tab row lines up
+     with the brand/clock in landscape. */
+  padding:
+    var(--space-3)
+    calc(var(--space-6) + var(--safe-right))
+    0
+    calc(var(--space-6) + var(--safe-left));
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border-soft);
 }
@@ -246,23 +288,108 @@ ul { list-style: none; padding: 0; margin: 0; }
    ============================================================= */
 main {
   grid-area: main;
-  padding: var(--space-6);
+  /* min-width:0 so this grid child can shrink below its content's min-content
+     width (the grid track is minmax(0,1fr), but the item itself also needs the
+     override) — otherwise a wide child re-inflates the page on mobile. */
+  min-width: 0;
+  /* Pad the scroll region by the side + bottom safe-area insets so device
+     rows, sliders, and the last list item clear the home indicator (bottom)
+     and the landscape notch / rounded corners (sides). Top is handled by the
+     topbar; this is the rest of the inset frame. */
+  padding:
+    var(--space-6)
+    calc(var(--space-6) + var(--safe-right))
+    calc(var(--space-6) + var(--safe-bottom))
+    calc(var(--space-6) + var(--safe-left));
   overflow: auto;
 }
 
-.dashboard {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-  max-width: 1400px;
+/* Each tab is a single full-width panel. Constrain its width and center it
+   so content stays readable on wide touchscreens / desktops instead of
+   stretching edge to edge. */
+.tab-panel {
+  max-width: 760px;
   margin: 0 auto;
 }
+
+/* ---- Compact dashboard overview ---- */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.dash-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* A responsive grid of compact tiles (lights, scenes). auto-fill + minmax
+   packs as many ~84px tiles per row as fit, and each cell stretches to share
+   leftover space — so tiles never overflow the viewport and the row reflows
+   cleanly from desktop down to phone. The phone breakpoint below tightens the
+   floor so 4 fit across a narrow screen. */
+.tile-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: var(--space-3);
+}
+
+/* Compact lit-button: icon over a small label. Glows when "on" (light is on
+   / scene is firing). Replaces the toggle switch in the dashboard view. */
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 92px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: center;
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    color var(--transition),
+    box-shadow var(--transition);
+}
+.tile:hover { border-color: var(--color-border); background: var(--color-surface-2); }
+.tile:active { transform: scale(0.97); }
+.tile .tile-icon { width: 30px; height: 30px; }
+.tile-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text-muted);
+  /* Keep long names to two lines, ellipsized, so tiles stay uniform. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Lit "on" state — the button glows with the accent color. */
+.tile.on {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+.tile.on .tile-label { color: var(--color-text); }
+
+/* Scene tiles reuse the existing scene-flash keyframe via .flash. */
+.tile.flash { animation: scene-flash 600ms ease-out; }
 
 .col {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  min-width: 0; /* allow grid children to shrink correctly */
+  min-width: 0; /* allow fl/grid children to shrink correctly */
 }
 
 .col-title {
@@ -272,10 +399,6 @@ main {
   letter-spacing: 0.08em;
   color: var(--color-text-muted);
   margin-bottom: var(--space-1);
-}
-
-.col-right {
-  gap: var(--space-6);
 }
 
 /* =============================================================
@@ -602,13 +725,32 @@ main {
    10. Responsive — stack at narrow widths (mobile, portrait Pi)
    ============================================================= */
 @media (max-width: 720px) {
-  .topbar { padding: var(--space-3) var(--space-4); }
-  main { padding: var(--space-4); }
-  .dashboard {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
+  /* iPhones all fall under this breakpoint, so the safe-area insets MUST be
+     re-applied here — these tighter overrides would otherwise wipe out the
+     inset padding set above and the status bar would overlap the clock again. */
+  .topbar {
+    padding:
+      calc(var(--space-3) + var(--safe-top))
+      calc(var(--space-4) + var(--safe-right))
+      var(--space-3)
+      calc(var(--space-4) + var(--safe-left));
+  }
+  main {
+    padding:
+      var(--space-4)
+      calc(var(--space-4) + var(--safe-right))
+      calc(var(--space-4) + var(--safe-bottom))
+      calc(var(--space-4) + var(--safe-left));
   }
   .scenes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* Dashboard lights: force exactly 4 across on phones (they'd otherwise wrap
+     to 2+2 on a narrow viewport). Tiles shrink to share the row, with a
+     tighter gap and slightly smaller icon so 4 fit comfortably. */
+  .tile-row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+  .tile { min-height: 80px; padding: var(--space-2); }
+  .tile .tile-icon { width: 26px; height: 26px; }
+  .tile-label { font-size: 11px; }
 }
 
 /* Slightly tighter cards at very narrow width (phones in portrait). */

@@ -23,13 +23,27 @@ fi
 
 UI_URL="${HESTIA_UI_URL:-http://localhost:8000/ui/}"
 
+# Flag notes (RAM-constrained Pi 4 kiosk):
+#  - We intentionally do NOT pass --disable-gpu: on the Pi it forces slow
+#    software rendering, hurting the "snappier UI" goal. Let Chromium use
+#    the VideoCore GPU.
+#  - --disk-cache-size bounds Chromium's on-disk cache (bytes); it does not
+#    cap RAM directly but stops unbounded cache growth on a long-lived kiosk.
+#  - --disable-features=TranslateUI and --disable-session-crashed-bubble
+#    suppress popups that would otherwise overlay the kiosk UI after a
+#    crash/restart. These are the flags the documented Pi-kiosk reference
+#    implementations (FullPageOS, reelyactive) converge on.
 exec "${CHROMIUM_BIN}" \
   --kiosk \
   --noerrdialogs \
   --disable-infobars \
   --disable-restore-session-state \
+  --disable-session-crashed-bubble \
   --disable-pinch \
+  --disable-features=TranslateUI \
+  --disable-component-update \
   --overscroll-history-navigation=0 \
   --check-for-update-interval=31536000 \
   --autoplay-policy=no-user-gesture-required \
+  --disk-cache-size=52428800 \
   "${UI_URL}"
