@@ -350,7 +350,22 @@ main {
       "scenes    schedules"
       ".         schedules";
     align-content: start;
-    gap: var(--space-5) var(--space-6);
+    /* row-gap then column-gap. NOTE: --space-5 does not exist in the scale
+       (it jumps 4->6); using it here made the whole `gap` shorthand invalid,
+       which silently zeroed the column gap and let the two columns touch on
+       the touchscreen. Use defined vars only. The column gap is the visible
+       separation between the lights/scenes column and the schedules column. */
+    row-gap: var(--space-6);
+    column-gap: var(--space-8);
+  }
+  /* CRITICAL: grid/flex items default to min-width:auto, which refuses to
+     shrink below their content's min-content width. Each block holds content
+     with a wide min-content (the 84px tile floors; the 70px schedule-time
+     column + pill), so without this the blocks inflate past their 1fr track,
+     collapse the column gap, and the columns overlap. min-width:0 lets the
+     blocks honor the grid tracks (and thus the gap between the columns). */
+  .dash-block {
+    min-width: 0;
   }
   .dash-block--lights    { grid-area: lights; }
   .dash-block--scenes    { grid-area: scenes; }
@@ -361,6 +376,9 @@ main {
     min-height: 0;
   }
   .dash-block--schedules .schedule-list {
+    /* min-width:0 so the rows (which have a wide min-content) don't re-inflate
+       this column either. */
+    min-width: 0;
     overflow-y: auto;
   }
 }
