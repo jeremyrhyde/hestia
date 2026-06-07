@@ -162,10 +162,29 @@ if [[ "$INSTALL_KIOSK" -eq 1 ]]; then
   echo
   echo "[4/6] installing kiosk dependencies..."
   KIOSK_PKGS=(unclutter)
-  # Pi OS uses chromium-browser; Ubuntu provides chromium.
+  # Chromium package name varies: Pi OS Bullseye uses `chromium-browser`,
+  # while Bookworm-based Pi OS and Ubuntu provide `chromium`. Only add a
+  # package if no chromium binary is already present, and pick whichever
+  # name apt can actually resolve a candidate for (avoids the
+  # "package chromium-browser has no installation candidate" failure).
   if ! command -v chromium-browser >/dev/null 2>&1 \
        && ! command -v chromium >/dev/null 2>&1; then
-    KIOSK_PKGS+=(chromium-browser)
+    chromium_pkg=""
+    for cand in chromium-browser chromium; do
+      if apt-cache policy "$cand" 2>/dev/null \
+           | grep -q 'Candidate: [^(]'; then
+        chromium_pkg="$cand"
+        break
+      fi
+    done
+    if [[ -z "$chromium_pkg" ]]; then
+      echo "  WARNING: no chromium package candidate found (tried" \
+           "chromium-browser, chromium). Run 'sudo apt-get update' and" \
+           "check 'apt-cache policy chromium'." >&2
+    else
+      echo "  using chromium package: $chromium_pkg"
+      KIOSK_PKGS+=("$chromium_pkg")
+    fi
   fi
   ensure_apt_packages "${KIOSK_PKGS[@]}"
 
