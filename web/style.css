@@ -731,6 +731,29 @@ main {
   color: var(--color-text-muted);
 }
 
+/* DashboardFormat schedule row — the compact dashboard variant (sibling to
+   the .tile dashboard buttons). No days subheader (omitted in the markup),
+   and the name wraps across as many lines as it needs instead of being
+   clamped to one line with an ellipsis. This lets long names take vertical
+   space rather than forcing the row wider than its column and overlapping
+   the lights/scenes tiles on the landscape touchscreen. */
+.schedule-row--dashboard {
+  /* Top-align so a wrapped multi-line name keeps the time and pill at the
+     top of the row instead of vertically centering against a tall name. */
+  align-items: start;
+}
+.schedule-row--dashboard .schedule-name-text {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  /* Break long unbroken words (e.g. a no-space name) rather than overflow. */
+  overflow-wrap: anywhere;
+}
+/* Nudge the time + pill to sit on the name's first line when it wraps. */
+.schedule-row--dashboard .schedule-time {
+  padding-top: 1px;
+}
+
 .pill {
   padding: var(--space-1) var(--space-4);
   min-height: 32px;

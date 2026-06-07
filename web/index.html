@@ -196,19 +196,24 @@
         </div>
       </section>
 
-      <!-- Schedules: full long-format rows beneath. -->
+      <!-- Schedules: DashboardFormat rows — the compact dashboard variant
+           (analogous to the .tile dashboard buttons for lights/scenes). The
+           days subheader is dropped and the name is allowed to wrap to
+           multiple lines so long names don't force the row past its minimum
+           width and overlap the buttons on the landscape touchscreen. The
+           On/Off toggle is retained. The full rich row (with the days
+           subheader, single-line) lives in the Schedules tab. -->
       <section class="dash-block dash-block--schedules" aria-labelledby="dash-sched-title">
         <h2 id="dash-sched-title" class="col-title">Schedules</h2>
         <ul class="schedule-list">
           <template x-for="sch in schedules" :key="sch.id">
-            <li class="schedule-row">
+            <li class="schedule-row schedule-row--dashboard">
               <svg class="icon icon-sm schedule-icon" aria-hidden="true">
                 <use href="#icon-clock"/>
               </svg>
               <span class="schedule-time" x-text="formatTime(sch.time)"></span>
               <span class="schedule-name">
                 <span class="schedule-name-text" x-text="sch.name"></span>
-                <span class="schedule-days" x-text="formatDays(sch.days)"></span>
               </span>
               <button class="pill"
                       :class="{on: sch.enabled}"
