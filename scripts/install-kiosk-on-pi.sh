@@ -110,10 +110,34 @@ if [[ "$resolved_mode" == "headless" ]]; then
   # desktop bloat. matchbox-window-manager is a tiny, kiosk-oriented WM
   # (smaller than openbox) that reliably gives Chromium a fullscreen
   # surface to attach to.
+  #
+  # xserver-xorg-legacy is REQUIRED for a non-root user to start X via
+  # startx. Without it, Xorg dies with "parse_vt_settings: Cannot open
+  # /dev/tty0 (Permission denied)" and the autologin->startx loop fails
+  # over and over (getty hits its restart limit; the screen flickers and
+  # shows a black console with a cursor). This is the #1 headless-kiosk
+  # gotcha on Debian/Ubuntu.
   ensure_apt_packages --no-recommends \
-    xserver-xorg xinit x11-xserver-utils matchbox-window-manager
+    xserver-xorg xserver-xorg-legacy xinit x11-xserver-utils \
+    matchbox-window-manager
   render_unit "$HESTIA_HOME/deploy/xinitrc.kiosk" "$USER_HOME/.xinitrc"
   chmod +x "$USER_HOME/.xinitrc"
+
+  # Allow any logged-in user to start the X server from the console.
+  # Pairs with xserver-xorg-legacy above. needs_root_rights=yes lets Xorg
+  # open /dev/tty0 on the Pi's KMS/modeset driver.
+  echo "  configuring Xwrapper to allow non-root X (sudo required)..."
+  sudo tee /etc/X11/Xwrapper.config >/dev/null <<'EOF'
+# Managed by scripts/install-kiosk-on-pi.sh — allow the kiosk user to
+# start X from tty1 without root.
+allowed_users=anybody
+needs_root_rights=yes
+EOF
+
+  # The kiosk user needs these groups to open the console (tty), the GPU
+  # (video/render), and input devices (input) under the bare X stack.
+  echo "  adding $USER_NAME to tty,video,input,render groups..."
+  sudo usermod -aG tty,video,input,render "$USER_NAME" || true
 
   # Append the startx-on-tty1 hook to ~/.bash_profile if not already there.
   BPROFILE="$USER_HOME/.bash_profile"
