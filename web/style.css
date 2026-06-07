@@ -324,6 +324,47 @@ main {
   gap: var(--space-3);
 }
 
+/* Landscape dashboard (Raspberry Pi touchscreen — typically 800x480 / 1024x600).
+   Phones stay in the default stacked column above; this only kicks in on a wide
+   landscape display, so a portrait phone is never affected. The min-width guard
+   keeps a sideways-held phone (~844px but still "phone") out unless it's genuinely
+   wide. Layout: Lights + Scenes stacked on the left, Schedules filling the tall
+   right column to use the otherwise-empty horizontal space. */
+@media (orientation: landscape) and (min-width: 640px) {
+  /* Let the dashboard panel use the full touchscreen width instead of the
+     760px reading cap (which is right for tall text-y tabs, wrong for the
+     two-column wall view). Scoped to the dashboard panel so the Scenes /
+     Schedules editor tabs keep their comfortable centered column. */
+  .dashboard.tab-panel {
+    max-width: none;
+  }
+  /* Fill the available height of `main` so the schedule column has a height
+     to scroll within, rather than growing the page. */
+  .dashboard {
+    min-height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "lights    schedules"
+      "scenes    schedules"
+      ".         schedules";
+    align-content: start;
+    gap: var(--space-5) var(--space-6);
+  }
+  .dash-block--lights    { grid-area: lights; }
+  .dash-block--scenes    { grid-area: scenes; }
+  .dash-block--schedules {
+    grid-area: schedules;
+    /* The schedule list scrolls within its column if it outgrows the screen
+       height, instead of pushing the whole dashboard taller. */
+    min-height: 0;
+  }
+  .dash-block--schedules .schedule-list {
+    overflow-y: auto;
+  }
+}
+
 /* A responsive grid of compact tiles (lights, scenes). auto-fill + minmax
    packs as many ~84px tiles per row as fit, and each cell stretches to share
    leftover space — so tiles never overflow the viewport and the row reflows

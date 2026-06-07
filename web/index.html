@@ -158,7 +158,7 @@
 
       <!-- Lights: compact lit-button grid. Tapping toggles the light; the
            button glows when on. -->
-      <section class="dash-block" aria-labelledby="dash-lights-title">
+      <section class="dash-block dash-block--lights" aria-labelledby="dash-lights-title">
         <h2 id="dash-lights-title" class="col-title">Lights</h2>
         <div class="tile-row">
           <template x-for="dev in lights()" :key="dev.id">
@@ -178,7 +178,7 @@
       </section>
 
       <!-- Scenes: compact lit-button grid (icon + name). Tapping runs it. -->
-      <section class="dash-block" aria-labelledby="dash-scenes-title">
+      <section class="dash-block dash-block--scenes" aria-labelledby="dash-scenes-title">
         <h2 id="dash-scenes-title" class="col-title">Scenes</h2>
         <div class="tile-row">
           <template x-for="scene in scenes" :key="scene.id">
@@ -197,7 +197,7 @@
       </section>
 
       <!-- Schedules: full long-format rows beneath. -->
-      <section class="dash-block" aria-labelledby="dash-sched-title">
+      <section class="dash-block dash-block--schedules" aria-labelledby="dash-sched-title">
         <h2 id="dash-sched-title" class="col-title">Schedules</h2>
         <ul class="schedule-list">
           <template x-for="sch in schedules" :key="sch.id">

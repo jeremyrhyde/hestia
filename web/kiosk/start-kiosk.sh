@@ -5,6 +5,19 @@
 # from an X session for testing.
 set -euo pipefail
 
+# Load .env from the repo root (two levels up: web/kiosk/ -> repo) if present,
+# so SERVER_IP_ADDRESS / HESTIA_UI_URL can be set there. We do this in-script
+# (rather than relying on systemd's EnvironmentFile) so it works across every
+# launch path: the systemd kiosk unit, the headless xinitrc, and running this
+# script by hand for testing.
+ENV_FILE="$(cd "$(dirname "$0")/../.." && pwd)/.env"
+if [[ -f "$ENV_FILE" ]]; then
+  set -a            # export everything we source
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+fi
+
 # Disable screen blanking / DPMS so the touchscreen stays on indefinitely.
 xset s off
 xset -dpms
@@ -21,7 +34,20 @@ if [[ -z "${CHROMIUM_BIN}" ]]; then
   exit 1
 fi
 
-UI_URL="${HESTIA_UI_URL:-http://localhost:8000/ui/}"
+# Resolve the URL Chromium opens, in priority order:
+#   1. HESTIA_UI_URL — explicit full override (wins if set).
+#   2. SERVER_IP_ADDRESS — point the kiosk at a server on the network
+#      (e.g. a central Pi running the FastAPI app); we build the standard
+#      http://<ip>:8000/ui/ URL around it.
+#   3. localhost — this Pi runs its own server (the default).
+if [[ -n "${HESTIA_UI_URL:-}" ]]; then
+  UI_URL="${HESTIA_UI_URL}"
+elif [[ -n "${SERVER_IP_ADDRESS:-}" ]]; then
+  UI_URL="http://${SERVER_IP_ADDRESS}:8000/ui/"
+else
+  UI_URL="http://localhost:8000/ui/"
+fi
+echo "start-kiosk: opening ${UI_URL}" >&2
 
 # Flag notes (RAM-constrained Pi 4 kiosk):
 #  - We intentionally do NOT pass --disable-gpu: on the Pi it forces slow
