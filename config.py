@@ -16,6 +16,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from schemas.config import DevicesConfig
@@ -35,6 +36,11 @@ class Settings(BaseSettings):
         DEVICES_CONFIG_PATH: YAML file describing the registered devices.
             Default ``"./devices.yaml"``. The Phase 3 API entry point reads
             this file at startup to instantiate drivers.
+        RECONCILE_POLL_SECONDS: How often (seconds) the state reconciler reads
+            each device's live state to correct UI/cache drift from out-of-band
+            changes (vendor app, device-side schedules, physical switches).
+            Default ``7.0``. Must be > 0. Only polls while a UI client is
+            connected, so a small value is cheap on a LAN.
     """
 
     HOST: str = "0.0.0.0"
@@ -43,6 +49,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "info"
     WEB_DIR: str = "./web"
     DEVICES_CONFIG_PATH: str = "./devices.yaml"
+    RECONCILE_POLL_SECONDS: float = Field(default=7.0, gt=0)
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

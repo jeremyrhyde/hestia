@@ -228,7 +228,13 @@ async def _build_components(
     # 8. State reconciler — corrects UI/cache drift caused by out-of-band
     #    changes (vendor app, device-side schedules, physical switches).
     #    Observes only; gated on having a connected WS client.
-    reconciler = StateReconciler(registry, state_store, bus, ws_manager)
+    reconciler = StateReconciler(
+        registry,
+        state_store,
+        bus,
+        ws_manager,
+        poll_seconds=settings.RECONCILE_POLL_SECONDS,
+    )
     await reconciler.start()
 
     return (
