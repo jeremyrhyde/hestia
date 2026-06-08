@@ -43,6 +43,7 @@ from fastapi import FastAPI
 from config import Settings, load_devices_config
 from core.api import create_app
 from core.events import EventBus
+from core.reconciler import StateReconciler
 from core.scenes import SceneEngine
 from core.scheduler import Scheduler
 from core.state import StateStore
@@ -134,6 +135,7 @@ async def _build_components(
     SceneEngine,
     Scheduler,
     WebSocketManager,
+    StateReconciler,
     list[dict[str, Any]],
     int,
 ]:
@@ -223,6 +225,12 @@ async def _build_components(
     ws_manager = WebSocketManager()
     ws_manager.subscribe_to_bus(bus)
 
+    # 8. State reconciler — corrects UI/cache drift caused by out-of-band
+    #    changes (vendor app, device-side schedules, physical switches).
+    #    Observes only; gated on having a connected WS client.
+    reconciler = StateReconciler(registry, state_store, bus, ws_manager)
+    await reconciler.start()
+
     return (
         bus,
         state_store,
@@ -230,6 +238,7 @@ async def _build_components(
         scene_engine,
         scheduler,
         ws_manager,
+        reconciler,
         failures,
         len(successfully_registered),
     )
@@ -251,6 +260,7 @@ def _make_lifespan(settings: Settings):
             scene_engine,
             scheduler,
             ws_manager,
+            reconciler,
             failures,
             n_devices,
         ) = await _build_components(settings)
@@ -276,6 +286,10 @@ def _make_lifespan(settings: Settings):
             yield
         finally:
             logger.info("main: shutting down")
+            try:
+                await reconciler.stop()
+            except Exception:  # pragma: no cover
+                logger.exception("main: reconciler.stop failed")
             try:
                 await scheduler.stop()
             except Exception:  # pragma: no cover

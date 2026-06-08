@@ -62,6 +62,17 @@ class DriverRegistry:
 
         self._drivers[device_id] = driver
 
+    def device_ids(self) -> list[str]:
+        """Return the IDs of every registered device.
+
+        The system-level answer to "which devices exist?" — a cheap,
+        I/O-free snapshot of the registry keys (unlike :meth:`list_devices`,
+        which calls ``get_info`` on each driver). Returns a new list so
+        callers can iterate safely while the registry is mutated.
+        """
+
+        return list(self._drivers.keys())
+
     def get(self, device_id: str) -> DeviceDriver:
         """Return the driver registered for *device_id*.
 
