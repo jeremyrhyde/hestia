@@ -1,27 +1,34 @@
-# Editor / IDE
-.claude
-reference/
-logs*
-
+# ---- Pantheon standard: keep this block identical across repos ----
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+dist/
+build/
 
-# Databases
-*.db
-*.db-journal
-
-# Environment
+# Local config and secrets — commit the *.example copies instead
 .env
 
-# Virtual environments
-venv/
-.venv/
+# Runtime data
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+logs/
+*.log
 
-# Tooling caches
-.pytest_cache/
-*.egg-info/
+# Frontend
+node_modules/
 
-# OS
+# Editors / OS / sync tools
 .DS_Store
+.codesync
+.stfolder
+.stignore
+*.sync-conflict-*
+
+# ---- hestia-specific ----
+.claude
+reference/
