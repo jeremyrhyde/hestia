@@ -21,7 +21,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=@HESTIA_HOME@
-ExecStart=@UV_BIN@ run uvicorn main:app --host 0.0.0.0 --port 8000
+ExecStart=@UV_BIN@ run uvicorn main:app --host 0.0.0.0 --port 8003
 Restart=on-failure
 RestartSec=5
 

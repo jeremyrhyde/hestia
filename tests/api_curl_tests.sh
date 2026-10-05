@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-HOST="${HOST:-http://localhost:8000}"
+HOST="${HOST:-http://localhost:8003}"
 DEVICE_ID="${DEVICE_ID:-dev-a}"   # change to a real ID on the Pi
 SCENE_ID="curl-smoke"
 SCHEDULE_ID="curl-smoke-sched"

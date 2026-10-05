@@ -8,7 +8,7 @@ Example:
     >>> from config import Settings
     >>> s = Settings()
     >>> s.PORT
-    8000
+    8003
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     Fields:
         HOST: Address the FastAPI server binds to. Default ``"0.0.0.0"``.
-        PORT: TCP port the server listens on. Default ``8000``.
+        PORT: TCP port the server listens on. Default ``8003``.
         DB_PATH: Filesystem path to the SQLite database. Default
             ``"./home-auto.db"``.
         LOG_LEVEL: Log level passed to uvicorn / loggers. Default ``"info"``.
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     """
 
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = 8003
     DB_PATH: str = "./home-auto.db"
     LOG_LEVEL: str = "info"
     WEB_DIR: str = "./web"

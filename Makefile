@@ -253,7 +253,7 @@ run-dev:
 		echo "main.py does not exist yet — created in Phase 3 (Agent A)."; \
 		exit 1; \
 	fi
-	$(UV) run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+	$(UV) run uvicorn main:app --reload --host 0.0.0.0 --port 8003
 
 # ---------------------------------------------------------------------------
 # Pi deployment (run these on the Pi itself, not the dev Mac)
@@ -302,8 +302,8 @@ pi-restart:
 # ---------------------------------------------------------------------------
 # Scenes & schedules — convenience wrappers around scripts/*.sh
 #
-# Override the API host with HESTIA_HOST (defaults to http://localhost:8000):
-#   make scene-bedtime HESTIA_HOST=http://hera:8000
+# Override the API host with HESTIA_HOST (defaults to http://localhost:8003):
+#   make scene-bedtime HESTIA_HOST=http://hera:8003
 # ---------------------------------------------------------------------------
 
 # Seed scripts: idempotent upserts (running twice is safe).

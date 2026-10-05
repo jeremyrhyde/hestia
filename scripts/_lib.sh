@@ -7,8 +7,8 @@
 #   source "$(dirname "$0")/_lib.sh"
 #   upsert_scene '{ "id": "wakeup", "name": "Wakeup", ... }'
 
-# Override with HESTIA_HOST=http://hera:8000 etc.
-HESTIA_HOST="${HESTIA_HOST:-http://localhost:8000}"
+# Override with HESTIA_HOST=http://hera:8003 etc.
+HESTIA_HOST="${HESTIA_HOST:-http://localhost:8003}"
 
 _log() {
   printf '%s\n' "$*" >&2

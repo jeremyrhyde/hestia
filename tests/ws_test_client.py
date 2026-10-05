@@ -1,6 +1,6 @@
 """Tiny WebSocket client for the Hestia /ws endpoint.
 
-Connects to ``ws://localhost:8000/ws`` (configurable via the ``HESTIA_WS``
+Connects to ``ws://localhost:8003/ws`` (configurable via the ``HESTIA_WS``
 env var) and prints every event the server pushes, prefixed with a local
 timestamp. Stays alive until Ctrl-C.
 
@@ -39,7 +39,7 @@ except ImportError as exc:  # pragma: no cover
     raise SystemExit(1) from exc
 
 
-WS_URL = os.environ.get("HESTIA_WS", "ws://localhost:8000/ws")
+WS_URL = os.environ.get("HESTIA_WS", "ws://localhost:8003/ws")
 
 
 def _stamp() -> str:

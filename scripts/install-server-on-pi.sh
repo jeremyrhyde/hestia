@@ -80,7 +80,7 @@ systemctl --user status hestia.service --no-pager -l || true
 
 echo
 echo "Server install complete."
-echo "  Server: http://$(hostname -I | awk '{print $1}'):8000/ui/"
+echo "  Server: http://$(hostname -I | awk '{print $1}'):8003/"
 echo "  Logs:   journalctl --user -u hestia.service -f"
 echo
 echo "  For the kiosk display, run: ./scripts/install-kiosk-on-pi.sh"
