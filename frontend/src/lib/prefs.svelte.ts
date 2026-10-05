@@ -21,6 +21,16 @@ export function setPref<K extends keyof Prefs>(key: K, value: Prefs[K]): void {
   applyPrefs();
 }
 
+/** False when this display hides the device (Settings → Devices). */
+export function isShown(id: string): boolean {
+  return !prefs.hiddenDevices.includes(id);
+}
+
+export function setDeviceShown(id: string, shown: boolean): void {
+  const rest = prefs.hiddenDevices.filter((h) => h !== id);
+  setPref('hiddenDevices', shown ? rest : [...rest, id]);
+}
+
 /** Reflect prefs onto <html> (tokens.css / app.css key off these). */
 export function applyPrefs(): void {
   const root = document.documentElement;

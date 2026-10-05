@@ -14,6 +14,8 @@ export interface Prefs {
   density: Density;
   motion: Motion;
   confirmAllOff: boolean;
+  /** Device ids this display leaves out of Home, Devices and All off. */
+  hiddenDevices: string[];
 }
 
 export const STORAGE_KEY = 'hestia.prefs.v1';
@@ -24,6 +26,7 @@ export const DEFAULT_PREFS: Prefs = {
   density: 'comfortable',
   motion: 'system',
   confirmAllOff: true,
+  hiddenDevices: [],
 };
 
 const THEMES: readonly Theme[] = ['dark', 'light', 'auto'];
@@ -49,6 +52,9 @@ export function parsePrefs(raw: string | null): Prefs {
     density: pick(obj.density, DENSITIES, DEFAULT_PREFS.density),
     motion: pick(obj.motion, MOTIONS, DEFAULT_PREFS.motion),
     confirmAllOff: typeof obj.confirmAllOff === 'boolean' ? obj.confirmAllOff : DEFAULT_PREFS.confirmAllOff,
+    hiddenDevices: Array.isArray(obj.hiddenDevices)
+      ? [...new Set(obj.hiddenDevices.filter((id): id is string => typeof id === 'string'))]
+      : [],
   };
 }
 

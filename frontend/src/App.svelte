@@ -8,7 +8,7 @@
   import Toasts from './components/Toast.svelte';
   import { startClock } from './lib/clock.svelte';
   import { live } from './lib/live.svelte';
-  import { applyPrefs } from './lib/prefs.svelte';
+  import { applyPrefs, isShown } from './lib/prefs.svelte';
   import { matchRoute, TITLES } from './lib/route';
   import { initRouter, navigate, router } from './lib/router.svelte';
   import { hestia, registerLiveHandlers, store } from './lib/store.svelte';
@@ -61,7 +61,7 @@
   $effect(() => {
     if (screen?.kind !== 'devices' || !screen.open || !hestia.ready) return;
     const id = screen.open;
-    if (!hestia.devices.some((d) => d.id === id)) navigate(['devices'], {}, { replace: true });
+    if (!hestia.devices.some((d) => d.id === id && isShown(id))) navigate(['devices'], {}, { replace: true });
   });
 </script>
 

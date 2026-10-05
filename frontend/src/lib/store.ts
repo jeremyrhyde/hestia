@@ -227,8 +227,9 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
     );
   }
 
-  async function allOff(): Promise<void> {
-    const targets = s.devices.filter((d) => isLight(d) && d.state.power);
+  /** Turn off every light that's on, except the ids in *skip* (hidden on this display). */
+  async function allOff(skip: readonly string[] = []): Promise<void> {
+    const targets = s.devices.filter((d) => isLight(d) && d.state.power && !skip.includes(d.id));
     if (!targets.length) return;
     const snapshot = targets.map((d) => ({ id: d.id, level: brightnessOf(d) }));
     const results = await Promise.all(

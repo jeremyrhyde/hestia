@@ -1,8 +1,10 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
+  import { isShown } from '../lib/prefs.svelte';
   import { hestia } from '../lib/store.svelte';
 
-  const failures = $derived(hestia.health?.devices_failed ?? []);
+  // Failures hidden in Settings → Devices are known-down; don't nag about them.
+  const failures = $derived((hestia.health?.devices_failed ?? []).filter((f) => isShown(f.id)));
 </script>
 
 {#if failures.length}

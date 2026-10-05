@@ -1,10 +1,12 @@
 <script lang="ts">
+  import Icon from '../components/Icon.svelte';
   import Segmented from '../components/Segmented.svelte';
   import Switch from '../components/Switch.svelte';
   import type { ClockMode } from '../lib/format';
   import { connection } from '../lib/live.svelte';
+  import { deviceIcon, deviceSubtitle } from '../lib/icons';
   import type { Density, Motion, Theme } from '../lib/preferences';
-  import { prefs, setPref } from '../lib/prefs.svelte';
+  import { isShown, prefs, setDeviceShown, setPref } from '../lib/prefs.svelte';
   import { hestia, store } from '../lib/store.svelte';
 
   const THEMES: { value: Theme; label: string }[] = [
@@ -53,6 +55,29 @@
   <p class="muted note">These settings are saved on this device only.</p>
 </section>
 
+{#if hestia.devices.length || failed.length}
+  <section class="stack" aria-label="Devices">
+    <h2 class="section-title">Devices</h2>
+    <div class="card settings">
+      {#each hestia.devices as device (device.id)}
+        <div class="setting">
+          <span class="device"><Icon name={deviceIcon(device)} size={20} />
+            <span class="device-text"><span>{device.name}</span><span class="muted sub">{deviceSubtitle(device)}</span></span></span>
+          <Switch checked={isShown(device.id)} label="Show {device.name}" onchange={(v) => setDeviceShown(device.id, v)} />
+        </div>
+      {/each}
+      {#each failed as f (f.id)}
+        <div class="setting">
+          <span class="device"><Icon name="alert" size={20} />
+            <span class="device-text"><span>{f.id}</span><span class="muted sub">Failed to register at startup</span></span></span>
+          <Switch checked={isShown(f.id)} label="Show {f.id}" onchange={(v) => setDeviceShown(f.id, v)} />
+        </div>
+      {/each}
+    </div>
+    <p class="muted note">Hidden devices drop off Home and Devices, All off leaves them alone, and a hidden device that failed at startup stops raising the warning — on this device only.</p>
+  </section>
+{/if}
+
 <section class="stack" aria-label="About">
   <h2 class="section-title">About</h2>
   <div class="card">
@@ -76,6 +101,9 @@
   }
   .setting:last-child { border-bottom: 0; }
   .note { font-size: var(--text-xs); }
+  .device { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text-muted); }
+  .device-text { display: grid; gap: 2px; color: var(--color-text); }
+  .sub { font-size: var(--text-xs); }
   .about { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-4); margin: 0; font-size: var(--text-sm); }
   .about dt { color: var(--color-text-muted); }
   .about dd { margin: 0; }

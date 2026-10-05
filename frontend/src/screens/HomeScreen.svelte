@@ -4,10 +4,11 @@
   import SceneCard from '../components/SceneCard.svelte';
   import ScheduleRow from '../components/ScheduleRow.svelte';
   import { isLight } from '../lib/icons';
+  import { isShown } from '../lib/prefs.svelte';
   import { navigate } from '../lib/router.svelte';
   import { hestia, store } from '../lib/store.svelte';
 
-  const lights = $derived(hestia.devices.filter(isLight));
+  const lights = $derived(hestia.devices.filter((d) => isShown(d.id) && isLight(d)));
 </script>
 
 <GlanceHeader />

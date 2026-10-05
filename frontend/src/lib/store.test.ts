@@ -257,6 +257,14 @@ describe('allOff', () => {
     expect(toast).toHaveBeenCalledWith("1 of 2 lights didn't respond", 'error');
   });
 
+  it('leaves skipped (hidden) lights alone', async () => {
+    const { s, store, api } = await loaded();
+    api.deviceAction.mockImplementation(async () => off());
+    await store.allOff(['plug']);
+    expect(api.deviceAction.mock.calls.map((c) => [c[0], c[1]])).toEqual([['lamp', 'turn_off']]);
+    expect(dev(s, 'plug').state.power).toBe(true);
+  });
+
   it('does nothing when no lights are on', async () => {
     const { store, api, toast } = await loaded([plug({ state: off() })]);
     await store.allOff();

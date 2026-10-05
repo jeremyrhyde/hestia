@@ -5,15 +5,17 @@
   import Slider from '../components/Slider.svelte';
   import { mediaText } from '../lib/format';
   import { brightnessOf, deviceIcon, deviceSubtitle, isDimmable } from '../lib/icons';
+  import { isShown } from '../lib/prefs.svelte';
   import { navigate } from '../lib/router.svelte';
   import { hestia, store } from '../lib/store.svelte';
 
   let { open }: { open?: string } = $props();
-  const openDevice = $derived(open ? hestia.devices.find((d) => d.id === open) : undefined);
+  const devices = $derived(hestia.devices.filter((d) => isShown(d.id)));
+  const openDevice = $derived(open ? devices.find((d) => d.id === open) : undefined);
 </script>
 
 <section class="stack" aria-label="Devices">
-  {#each hestia.devices as device (device.id)}
+  {#each devices as device (device.id)}
     <div class="device-row" data-device-id={device.id} class:on={device.state.power}>
       <button class="row-main" onclick={() => navigate(['devices'], { open: device.id }, { replace: true })}>
         <span class="row-icon"><Icon name={deviceIcon(device)} size={24} /></span>
@@ -34,7 +36,9 @@
       {/if}
     </div>
   {:else}
-    <p class="center-state muted">No devices registered. Add some to devices.yaml.</p>
+    <p class="center-state muted">
+      {hestia.devices.length ? 'Every device is hidden on this display. Show them in Settings.' : 'No devices registered. Add some to devices.yaml.'}
+    </p>
   {/each}
 </section>
 

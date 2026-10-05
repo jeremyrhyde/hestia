@@ -16,12 +16,16 @@ const throwing: StorageLike = {
 
 describe('parsePrefs', () => {
   it('defaults: dark, 12h, comfortable, follow OS motion, confirm All off', () => {
-    expect(parsePrefs(null)).toEqual({ theme: 'dark', clock: '12h', density: 'comfortable', motion: 'system', confirmAllOff: true });
+    expect(parsePrefs(null)).toEqual({ theme: 'dark', clock: '12h', density: 'comfortable', motion: 'system', confirmAllOff: true, hiddenDevices: [] });
     expect(DEFAULT_PREFS.theme).toBe('dark');
   });
   it('keeps valid values and drops unknown ones', () => {
     expect(parsePrefs(JSON.stringify({ theme: 'light', clock: '24h', density: 'nope', motion: 'reduced', confirmAllOff: false, extra: 1 })))
-      .toEqual({ theme: 'light', clock: '24h', density: 'comfortable', motion: 'reduced', confirmAllOff: false });
+      .toEqual({ theme: 'light', clock: '24h', density: 'comfortable', motion: 'reduced', confirmAllOff: false, hiddenDevices: [] });
+  });
+  it('hiddenDevices keeps unique string ids and drops anything else', () => {
+    expect(parsePrefs(JSON.stringify({ hiddenDevices: ['a', 'b', 'a', 3, null] })).hiddenDevices).toEqual(['a', 'b']);
+    expect(parsePrefs(JSON.stringify({ hiddenDevices: 'a' })).hiddenDevices).toEqual([]);
   });
   it('corrupt JSON or non-objects give defaults', () => {
     expect(parsePrefs('{not json')).toEqual(DEFAULT_PREFS);

@@ -4,19 +4,19 @@
   import { clock } from '../lib/clock.svelte';
   import { formatClock, formatDate, formatTime, nextSchedule } from '../lib/format';
   import { isLight } from '../lib/icons';
-  import { prefs } from '../lib/prefs.svelte';
+  import { isShown, prefs } from '../lib/prefs.svelte';
   import { hestia, store } from '../lib/store.svelte';
 
   /** Ask before All off when at least this many lights are on. */
   const CONFIRM_AT = 4;
 
-  const lightsOn = $derived(hestia.devices.filter((d) => isLight(d) && d.state.power).length);
+  const lightsOn = $derived(hestia.devices.filter((d) => isShown(d.id) && isLight(d) && d.state.power).length);
   const next = $derived(nextSchedule(hestia.schedules, clock.now));
   let confirming = $state(false);
 
   function allOff(): void {
     if (prefs.confirmAllOff && lightsOn >= CONFIRM_AT) confirming = true;
-    else void store.allOff();
+    else void store.allOff(prefs.hiddenDevices);
   }
 </script>
 
@@ -41,7 +41,7 @@
     title="Turn off {lightsOn} lights?"
     confirmLabel="All off"
     danger
-    onconfirm={() => { confirming = false; void store.allOff(); }}
+    onconfirm={() => { confirming = false; void store.allOff(prefs.hiddenDevices); }}
     oncancel={() => (confirming = false)} />
 {/if}
 
