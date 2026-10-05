@@ -53,10 +53,10 @@ uv run pytest tests/test_schemas.py -v
 ## Run the dev server
 
 ```bash
-make run-dev               # uvicorn on :8000 with --reload
-# UI:    http://localhost:8000/ui/
-# API:   http://localhost:8000/docs
-# Health: http://localhost:8000/health
+make run-dev               # uvicorn on :8003 with --reload
+# UI:    http://localhost:8003/
+# API:   http://localhost:8003/docs
+# Health: http://localhost:8003/health
 ```
 
 ## Pi deployment
@@ -105,3 +105,23 @@ Phases 1–4a complete: foundation, drivers, core services, API + WebSocket,
 touchscreen UI. Pi deployment scripts are in place. Phase 4b (voice) and
 Phase 5 (final integration / soak) still ahead — see
 `docs/home-auto-build-plan.md`.
+
+## Using with Pantheon
+
+Hestia is one of the modules of [Pantheon](https://github.com/jeremyrhyde/pantheon),
+which runs it alongside the other modules behind one address. Nothing here
+changes for that: Hestia always listens on **port 8003**, serves its UI at
+`/`, its API under `/api/` (WebSocket `/api/ws`) and `/health` at the root.
+
+| | Standalone | Inside Pantheon |
+|---|---|---|
+| UI | `http://<pi>:8003/` | `http://<main-pi>:8000/hestia/` |
+| Service | `make service-install` | installed by Pantheon's `make service-install-all` |
+| Kiosk | `make install-pi-kiosk` | Pantheon's `make kiosk-install MODULE=hestia` |
+
+Inside Pantheon, Hestia is the home-automation panel: wall-mounted kiosks
+open it directly, and Pantheon's home screen links to it.
+
+Upgrading an existing install: the old address `:8000/ui/` is now `:8003/`.
+Remove any `PORT=8000` or `HESTIA_UI_URL=…/ui/` lines from `.env`, then
+`git pull && make service-restart`.

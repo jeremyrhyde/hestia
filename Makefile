@@ -69,6 +69,7 @@ help:
 	@echo "  make pi-status              Show status of hestia.service + hestia-kiosk.service"
 	@echo "  make pi-logs                Tail the server's journal"
 	@echo "  make pi-restart             Restart hestia.service"
+	@echo "  make service-install   Same as install-pi-server (Pantheon's name)"
 	@echo ""
 	@echo "Scenes & schedules (server must be running):"
 	@echo "  make seed                  Upsert default wakeup + bedtime scenes/schedules"
@@ -298,6 +299,21 @@ pi-logs:
 pi-restart:
 	systemctl --user restart hestia.service
 	@echo "Restarted hestia.service"
+
+# Pantheon contract names — Pantheon's installer runs
+# `make -C modules/hestia service-install`. The install-pi-* names still work.
+.PHONY: service-install service-uninstall service-status service-restart service-logs
+service-install: install-pi-server
+
+service-uninstall:
+	./scripts/install-server-on-pi.sh --uninstall
+
+service-status:
+	@systemctl --user status hestia.service --no-pager -l || true
+
+service-restart: pi-restart
+
+service-logs: pi-logs
 
 # ---------------------------------------------------------------------------
 # Scenes & schedules — convenience wrappers around scripts/*.sh
