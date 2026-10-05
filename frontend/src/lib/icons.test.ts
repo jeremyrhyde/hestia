@@ -43,6 +43,7 @@ describe('sceneIcon', () => {
     ['x', 'Good night', 'bed'],
     ['wakeup', 'Morning', 'sunrise'],
     ['movie', 'Movie', 'film'],
+    ['movie-night', 'Movie Night', 'film'],
     ['away', 'Leaving', 'log-out'],
     ['misc', 'Party', 'power'],
   ])('%s/%s → %s', (id, name, icon) => expect(sceneIcon({ id, name, actions: [] })).toBe(icon));

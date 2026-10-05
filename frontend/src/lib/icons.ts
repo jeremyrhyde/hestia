@@ -32,9 +32,10 @@ export function deviceIcon(d: Device): string {
 
 export function sceneIcon(scene: Scene): string {
   const haystack = `${scene.id ?? ''} ${scene.name ?? ''}`.toLowerCase();
+  // Movie first: "Movie Night" is a film scene, not bedtime.
+  if (/(movie|film|cinema)/.test(haystack)) return 'film';
   if (/(bed|night|sleep)/.test(haystack)) return 'bed';
   if (/(morn|wake|sunrise)/.test(haystack)) return 'sunrise';
-  if (/(movie|film|cinema)/.test(haystack)) return 'film';
   if (/(away|leave|out)/.test(haystack)) return 'log-out';
   return 'power';
 }
