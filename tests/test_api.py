@@ -391,3 +391,14 @@ def test_websocket_receives_scene_executed(client):
 
         assert types_seen.count("device_state_changed") == 2
         assert types_seen.count("scene_executed") == 1
+
+
+def test_status_endpoint(client):
+    body = client.get("/api/status").json()
+    assert body["state"] == "ok"
+    labels = [s["label"] for s in body["stats"]]
+    assert labels[:2] == ["Devices registered", "Devices failed"]
+    client.app.state.devices_failed = [{"id": "lamp", "error": "timeout"}]
+    body = client.get("/api/status").json()
+    assert body["state"] == "degraded"
+    assert body["stats"][1] == {"label": "Devices failed", "value": 1, "kind": "count", "warn": True}

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from core.events import EventBus
@@ -47,6 +47,33 @@ _WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
 def _weekday_code(when: datetime) -> str:
     return _WEEKDAYS[when.weekday()]
+
+
+def next_occurrence(
+    schedules: "list[Schedule]", now: datetime
+) -> "tuple[Schedule, datetime] | None":
+    """The soonest upcoming firing among enabled schedules, or None.
+
+    Mirrors :meth:`Scheduler._matches`: HH:MM local time on the listed
+    weekdays (every day when ``days`` is None). Unparseable times are skipped.
+    """
+    best: tuple[Schedule, datetime] | None = None
+    for schedule in schedules:
+        if not schedule.enabled:
+            continue
+        try:
+            hour, minute = (int(part) for part in schedule.time.split(":"))
+        except ValueError:
+            continue
+        days = {d.lower() for d in schedule.days} if schedule.days is not None else None
+        for offset in range(8):
+            at = (now + timedelta(days=offset)).replace(hour=hour, minute=minute, second=0, microsecond=0)
+            if at <= now or (days is not None and _weekday_code(at) not in days):
+                continue
+            if best is None or at < best[1]:
+                best = (schedule, at)
+            break
+    return best
 
 
 class Scheduler:

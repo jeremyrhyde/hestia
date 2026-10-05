@@ -28,6 +28,7 @@ logged.
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -42,6 +43,7 @@ from fastapi import (
 )
 from fastapi.staticfiles import StaticFiles
 
+from core.scheduler import next_occurrence
 from schemas.device import DeviceAction, DeviceInfo, DeviceState
 from schemas.scene import Scene
 from schemas.schedule import Schedule
@@ -326,6 +328,31 @@ def mount_ui(app: FastAPI, settings: "Settings") -> None:
     logger.info("Static UI mounted at %s -> %s", UI_MOUNT_PATH, web_dir)
 
 
+def _build_status_router() -> APIRouter:
+    """GET /api/status — the optional Pantheon module-status contract."""
+
+    router = APIRouter(tags=["status"])
+
+    @router.get("/status")
+    async def module_status(request: Request) -> dict[str, Any]:
+        state = request.app.state
+        registered = getattr(state, "devices_registered", 0)
+        failed = getattr(state, "devices_failed", [])
+        stats: list[dict[str, Any]] = [
+            {"label": "Devices registered", "value": registered, "kind": "count"},
+            {"label": "Devices failed", "value": len(failed), "kind": "count", "warn": bool(failed)},
+        ]
+        summary = None
+        upcoming = next_occurrence(await _store(request).list_schedules(), datetime.now().astimezone())
+        if upcoming is not None:
+            schedule, at = upcoming
+            stats.append({"label": "Next schedule", "value": at.astimezone(timezone.utc).isoformat(), "kind": "time"})
+            summary = f"Next: {schedule.name} at {schedule.time}"
+        return {"state": "degraded" if failed else "ok", "summary": summary, "stats": stats}
+
+    return router
+
+
 def create_app(
     *,
     registry: "DriverRegistry",
@@ -373,6 +400,7 @@ def create_app(
         _build_scenes_router,
         _build_schedules_router,
         _build_ws_router,
+        _build_status_router,
     ):
         api.include_router(build())
     app.include_router(api)
