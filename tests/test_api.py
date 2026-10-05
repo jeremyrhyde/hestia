@@ -402,3 +402,16 @@ def test_status_endpoint(client):
     body = client.get("/api/status").json()
     assert body["state"] == "degraded"
     assert body["stats"][1] == {"label": "Devices failed", "value": 1, "kind": "count", "warn": True}
+
+
+def test_status_endpoint_with_schedule(client):
+    from datetime import datetime, timedelta
+
+    payload = _schedule_payload("sched-1")
+    payload["days"] = None
+    assert client.post("/api/schedules/", json=payload).status_code == 200
+    body = client.get("/api/status").json()
+    assert body["summary"].startswith("Next: ")
+    stat = next(s for s in body["stats"] if s["label"] == "Next schedule")
+    assert stat["kind"] == "time"
+    assert datetime.fromisoformat(stat["value"]).utcoffset() == timedelta(0)

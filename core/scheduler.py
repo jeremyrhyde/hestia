@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -45,6 +46,9 @@ logger = logging.getLogger(__name__)
 _WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
 
+_TIME_RE = re.compile(r"([01]\d|2[0-3]):[0-5]\d")
+
+
 def _weekday_code(when: datetime) -> str:
     return _WEEKDAYS[when.weekday()]
 
@@ -55,16 +59,18 @@ def next_occurrence(
     """The soonest upcoming firing among enabled schedules, or None.
 
     Mirrors :meth:`Scheduler._matches`: HH:MM local time on the listed
-    weekdays (every day when ``days`` is None). Unparseable times are skipped.
+    weekdays (every day when ``days`` is None). Times that
+    ``_matches`` would never fire (not zero-padded HH:MM, or out of range) are
+    skipped. ``now`` should be aware local time; across a DST change the result
+    can be off by the DST shift, which is fine for display.
     """
     best: tuple[Schedule, datetime] | None = None
     for schedule in schedules:
         if not schedule.enabled:
             continue
-        try:
-            hour, minute = (int(part) for part in schedule.time.split(":"))
-        except ValueError:
+        if not _TIME_RE.fullmatch(schedule.time):
             continue
+        hour, minute = (int(part) for part in schedule.time.split(":"))
         days = {d.lower() for d in schedule.days} if schedule.days is not None else None
         for offset in range(8):
             at = (now + timedelta(days=offset)).replace(hour=hour, minute=minute, second=0, microsecond=0)

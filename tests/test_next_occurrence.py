@@ -24,3 +24,18 @@ def test_next_occurrence_rolls_to_the_next_matching_day():
 
 def test_next_occurrence_none():
     assert next_occurrence([], MON_0800) is None
+
+
+def test_next_occurrence_at_exactly_now_goes_to_tomorrow():
+    found, at = next_occurrence([sched("now", "08:00")], MON_0800)
+    assert at == datetime(2026, 10, 6, 8, 0)
+
+
+def test_next_occurrence_uppercase_day_codes_match():
+    found, at = next_occurrence([sched("weekend", "09:00", ["SAT"])], MON_0800)
+    assert at == datetime(2026, 10, 10, 9, 0)
+
+
+def test_next_occurrence_skips_times_the_scheduler_never_fires():
+    schedules = [sched("a", "25:00"), sched("b", "7:05"), sched("c", "nope"), sched("d", "12:60")]
+    assert next_occurrence(schedules, MON_0800) is None

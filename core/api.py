@@ -340,15 +340,29 @@ def _build_status_router() -> APIRouter:
         failed = getattr(state, "devices_failed", [])
         stats: list[dict[str, Any]] = [
             {"label": "Devices registered", "value": registered, "kind": "count"},
-            {"label": "Devices failed", "value": len(failed), "kind": "count", "warn": bool(failed)},
+            {
+                "label": "Devices failed",
+                "value": len(failed),
+                "kind": "count",
+                "warn": bool(failed),
+            },
         ]
         summary = None
-        upcoming = next_occurrence(await _store(request).list_schedules(), datetime.now().astimezone())
+        schedules = await _store(request).list_schedules()
+        upcoming = next_occurrence(schedules, datetime.now().astimezone())
         if upcoming is not None:
             schedule, at = upcoming
-            stats.append({"label": "Next schedule", "value": at.astimezone(timezone.utc).isoformat(), "kind": "time"})
+            stats.append({
+                "label": "Next schedule",
+                "value": at.astimezone(timezone.utc).isoformat(),
+                "kind": "time",
+            })
             summary = f"Next: {schedule.name} at {schedule.time}"
-        return {"state": "degraded" if failed else "ok", "summary": summary, "stats": stats}
+        return {
+            "state": "degraded" if failed else "ok",
+            "summary": summary,
+            "stats": stats,
+        }
 
     return router
 
