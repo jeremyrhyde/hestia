@@ -107,7 +107,15 @@ export class LiveClient {
       this.isOpen = true;
       this.attempt = 0;
       this.setStatus('open');
-      if (isReconnect) for (const fn of this.reconnectHandlers) fn();
+      if (isReconnect) {
+        for (const fn of this.reconnectHandlers) {
+          try {
+            fn();
+          } catch (err) {
+            console.error('live: reconnect handler failed', err);
+          }
+        }
+      }
     };
     s.onmessage = (ev) => this.dispatch(ev.data);
     s.onclose = () => {

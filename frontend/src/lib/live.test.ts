@@ -117,6 +117,21 @@ describe('LiveClient', () => {
     expect(onState).toHaveBeenCalledTimes(1);
   });
 
+  it('a throwing reconnect handler does not block the others', () => {
+    const { client, last } = setup();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const second = vi.fn();
+    client.onReconnect(() => { throw new Error('reconnect bug'); });
+    client.onReconnect(second);
+    client.connect();
+    last().open();
+    last().close();
+    vi.advanceTimersByTime(1000);
+    expect(() => last().open()).not.toThrow();
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalled();
+  });
+
   it('disconnect stops reconnecting', () => {
     const { client, sockets, last } = setup();
     client.connect();
