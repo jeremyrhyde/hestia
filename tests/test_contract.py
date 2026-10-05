@@ -81,3 +81,27 @@ def test_web_ui_uses_only_relative_urls():
             if any(p.search(line) for p in _ABSOLUTE):
                 offenders.append(f"{f.relative_to(WEB)}:{n}: {line.strip()}")
     assert offenders == []
+
+
+def test_ui_cache_headers(tmp_path):
+    settings = _settings(tmp_path)
+    assets = Path(settings.WEB_DIR) / "assets"
+    assets.mkdir()
+    (assets / "index-abc123.js").write_text("console.log(1)")
+    client = TestClient(build_app(settings))
+    hashed = client.get("/assets/index-abc123.js")
+    assert hashed.status_code == 200
+    assert hashed.headers["cache-control"] == "public, max-age=31536000, immutable"
+    assert client.get("/").headers["cache-control"] == "no-cache"
+
+
+def test_missing_web_dir_warning_names_make_build(tmp_path, caplog):
+    settings = Settings(
+        _env_file=None,
+        WEB_DIR=str(tmp_path / "missing"),
+        DB_PATH=str(tmp_path / "t.db"),
+        DEVICES_CONFIG_PATH=str(tmp_path / "none.yaml"),
+    )
+    with caplog.at_level("WARNING"):
+        build_app(settings)
+    assert "make build" in caplog.text
