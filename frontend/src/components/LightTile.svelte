@@ -16,7 +16,8 @@
   const level = $derived(brightnessOf(device));
   let dragLevel: number | null = $state(null);
   const shown = $derived(dragLevel ?? level);
-  const glow = $derived(glowOpacity(on, shown));
+  const showLevel = $derived(dimmable && (on || dragLevel !== null));
+  const glow = $derived(glowOpacity(on || dragLevel !== null, shown));
 
   let el: HTMLButtonElement | undefined = $state();
   let pointerId: number | null = null;
@@ -31,13 +32,15 @@
     if (pressTimer) clearTimeout(pressTimer);
     pressTimer = null;
   }
+  // Teardown runs on destroy: a stale long-press must not navigate later.
+  $effect(() => clearPress);
 
   function onpointerdown(e: PointerEvent): void {
     if (pointerId !== null || (e.pointerType === 'mouse' && e.button !== 0)) return;
     pointerId = e.pointerId;
     startX = e.clientX;
     startY = e.clientY;
-    startLevel = level ?? (on ? 100 : 0);
+    startLevel = on ? (level ?? 100) : 0;
     gesture = 'pending';
     suppressClick = false;
     // Capture now (touch already has implicit capture) so a mouse released
@@ -79,13 +82,12 @@
     gesture = 'pending';
   }
 
-  function onclick(): void {
-    // Taps arrive as click after pointerup; keyboard Enter/Space too.
-    if (suppressClick) {
-      suppressClick = false;
-      return;
-    }
-    ontoggle();
+  function onclick(e: MouseEvent): void {
+    // Taps arrive as click after pointerup and are skipped after a drag or
+    // long-press. Keyboard Enter/Space (detail 0) always toggles.
+    const suppressed = suppressClick && e.detail !== 0;
+    suppressClick = false;
+    if (!suppressed) ontoggle();
   }
 
   function onkeydown(e: KeyboardEvent): void {
@@ -101,19 +103,20 @@
   class:on
   style="--glow: {glow}; --level: {(shown ?? 0) / 100}; touch-action: {dimmable ? 'pan-x' : 'manipulation'}"
   aria-pressed={on}
-  aria-label="{device.name}{dimmable && on && shown !== null ? `, ${shown}%` : ''}"
+  aria-label="{device.name}{showLevel && shown !== null ? `, ${shown}%` : ''}"
   {onpointerdown}
   {onpointermove}
   onpointerup={onpointerend}
   onpointercancel={onpointerend}
+  onlostpointercapture={onpointerend}
   {onclick}
   {onkeydown}
   oncontextmenu={(e) => e.preventDefault()}>
-  {#if dimmable && on}<span class="fill" aria-hidden="true"></span>{/if}
+  {#if showLevel}<span class="fill" aria-hidden="true"></span>{/if}
   <span class="halo" aria-hidden="true"></span>
   <span class="icon"><Icon name="lightbulb" size={32} /></span>
   <span class="name">{device.name}</span>
-  {#if dimmable && on && shown !== null}<span class="pct">{shown}%</span>{/if}
+  {#if showLevel && shown !== null}<span class="pct">{shown}%</span>{/if}
 </button>
 
 <style>
