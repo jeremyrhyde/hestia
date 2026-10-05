@@ -36,16 +36,17 @@ fi
 
 # Resolve the URL Chromium opens, in priority order:
 #   1. HESTIA_UI_URL — explicit full override (wins if set).
-#   2. SERVER_IP_ADDRESS — point the kiosk at a server on the network
-#      (e.g. a central Pi running the FastAPI app); we build the standard
-#      http://<ip>:8000/ui/ URL around it.
+#   2. SERVER_IP_ADDRESS — point the kiosk at a Hestia server elsewhere on the
+#      network; we build http://<ip>:${PORT:-8003}/ around it.
 #   3. localhost — this Pi runs its own server (the default).
+# Inside a full Pantheon install, use Pantheon's kiosk instead
+# (make kiosk-install MODULE=hestia in the pantheon repo).
 if [[ -n "${HESTIA_UI_URL:-}" ]]; then
   UI_URL="${HESTIA_UI_URL}"
 elif [[ -n "${SERVER_IP_ADDRESS:-}" ]]; then
-  UI_URL="http://${SERVER_IP_ADDRESS}:8000/ui/"
+  UI_URL="http://${SERVER_IP_ADDRESS}:${PORT:-8003}/"
 else
-  UI_URL="http://localhost:8000/ui/"
+  UI_URL="http://localhost:${PORT:-8003}/"
 fi
 echo "start-kiosk: opening ${UI_URL}" >&2
 

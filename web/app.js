@@ -37,10 +37,10 @@ function app() {
       // Parallel fetch of all four endpoints. Each setter is independent so
       // a single failing endpoint doesn't blank the rest of the page.
       const [devices, scenes, schedules, health] = await Promise.allSettled([
-        this._json('/devices/'),
-        this._json('/scenes/'),
-        this._json('/schedules/'),
-        this._json('/health'),
+        this._json('api/devices/'),
+        this._json('api/scenes/'),
+        this._json('api/schedules/'),
+        this._json('health'),
       ]);
 
       if (devices.status === 'fulfilled') this.devices = devices.value || [];
@@ -185,7 +185,7 @@ function app() {
       const prev = !!dev.state.power;
       dev.state = { ...dev.state, power: !prev };
       try {
-        const newState = await this._json(`/devices/${encodeURIComponent(dev.id)}/action`, {
+        const newState = await this._json(`api/devices/${encodeURIComponent(dev.id)}/action`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'toggle' }),
@@ -204,7 +204,7 @@ function app() {
       // Optimistic flip
       dev.state = { ...dev.state, power: !playing };
       try {
-        const newState = await this._json(`/devices/${encodeURIComponent(dev.id)}/action`, {
+        const newState = await this._json(`api/devices/${encodeURIComponent(dev.id)}/action`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
@@ -225,7 +225,7 @@ function app() {
         attributes: { ...prevAttrs, brightness: level },
       };
       try {
-        const newState = await this._json(`/devices/${encodeURIComponent(dev.id)}/action`, {
+        const newState = await this._json(`api/devices/${encodeURIComponent(dev.id)}/action`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'set_brightness', params: { level } }),
@@ -244,7 +244,7 @@ function app() {
       // Server-side sources `device_state_changed` for each step, so we don't
       // need to merge the result list here — the WS will deliver state diffs.
       try {
-        await this._json(`/scenes/${encodeURIComponent(scene.id)}/execute`, {
+        await this._json(`api/scenes/${encodeURIComponent(scene.id)}/execute`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -265,7 +265,7 @@ function app() {
       const prev = !!sch.enabled;
       sch.enabled = !prev;
       try {
-        const updated = await this._json(`/schedules/${encodeURIComponent(sch.id)}`, {
+        const updated = await this._json(`api/schedules/${encodeURIComponent(sch.id)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: sch.enabled }),
@@ -281,8 +281,9 @@ function app() {
     // ---------------------------------------------------------------- WebSocket
 
     connectWebSocket() {
-      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      const url = `${proto}://${location.host}/ws`;
+      // Relative to the page, so it works standalone and under /hestia/.
+      const url = new URL('api/ws', document.baseURI);
+      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       let ws;
       try {
         ws = new WebSocket(url);
