@@ -19,7 +19,7 @@ existing code.
 ├── schemas/                # shared Pydantic data contracts
 ├── drivers/                # device-specific adapters + registry
 ├── interfaces/             # server-side API consumers (e.g. voice)
-├── web/                    # static touchscreen frontend
+├── frontend/               # Svelte + Vite touchscreen UI (built to frontend/dist)
 ├── tests/                  # pytest suite
 │
 ├── reference/              # archive of pre-existing controller modules
@@ -53,7 +53,8 @@ uv run pytest tests/test_schemas.py -v
 ## Run the dev server
 
 ```bash
-make run-dev               # uvicorn on :8003 with --reload
+# `make setup build run` installs uv and Node 20+, builds the UI and starts the server.
+make run-dev               # uvicorn on :8003 with --reload + Vite UI on :5173
 # UI:    http://localhost:8003/
 # API:   http://localhost:8003/docs
 # Health: http://localhost:8003/health
@@ -97,7 +98,7 @@ make install-pi-no-kiosk    # server only (e.g., a headless API host with
 ```
 
 For full deployment details (boot sequence, kiosk troubleshooting, OS-specific
-notes) see `web/README.md`.
+notes) see `frontend/README.md`.
 
 ## Status
 

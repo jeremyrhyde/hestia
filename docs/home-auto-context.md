@@ -12,7 +12,7 @@ All services run on a single Raspberry Pi sitting on a desk.
 - **Relay switches**: wired directly to the Pi's GPIO pins, controlled via `gpiozero` or `RPi.GPIO`
 - **Spotify Connect**: running locally on the Pi
 - **Microphone + speaker**: attached to the Pi, used for voice control pipeline
-- **Touchscreen**: 7-inch (or similar) display attached to the Pi (or a second Pi), running a fullscreen Chromium kiosk pointed at `localhost:8000`
+- **Touchscreen**: 7-inch (or similar) display attached to the Pi (or a second Pi), running a fullscreen Chromium kiosk pointed at `localhost:8003`
 
 Existing Python modules already exist for controlling the relay switches, Kasa devices, and Spotify. These modules will be wrapped by driver adapters — they are not rewritten.
 
@@ -28,8 +28,8 @@ The dependency rule: `core/` never imports from `drivers/` except through the re
 
 All interfaces are API clients. They consume the Core API over HTTP/WebSocket and have no knowledge of device internals.
 
-- **Touchscreen UI** (`web/index.html`): static single-page app served by FastAPI, runs in fullscreen Chromium on the Pi's touchscreen. Communicates via REST for commands and WebSocket for real-time state updates. This is a client, not a server-side component.
-- **Voice control** (`interfaces/voice.py`): a server-side Python process running on the Pi. Chains wake-word detection → speech-to-text (Whisper, running locally) → intent parsing → API calls to `localhost:8000`. Runs as a separate process alongside the core server.
+- **Touchscreen UI** (`frontend/`, Svelte + Vite, built to `frontend/dist`): single-page app served by FastAPI, runs in fullscreen Chromium on the Pi's touchscreen. Communicates via REST for commands and WebSocket for real-time state updates. This is a client, not a server-side component.
+- **Voice control** (`interfaces/voice.py`): a server-side Python process running on the Pi. Chains wake-word detection → speech-to-text (Whisper, running locally) → intent parsing → API calls to `localhost:8003`. Runs as a separate process alongside the core server.
 - **Future interfaces**: mobile app, CLI tool, IFTTT webhook, Home Assistant bridge — any HTTP client can join without backend changes.
 
 ### Layer 2: Core server (`core/`)
@@ -116,7 +116,7 @@ home-auto/
 ├── interfaces/              # server-side API consumers on the Pi
 │   └── voice.py             # wake word → STT → intent → API call
 │
-└── web/                     # static client assets served by FastAPI
+└── frontend/                # Svelte + Vite UI, built to frontend/dist and served by FastAPI
     └── index.html           # touchscreen SPA
 ```
 
@@ -177,7 +177,7 @@ Each concrete driver wraps an existing Python module. The driver author never im
 - `DELETE /schedules/{id}` — delete a schedule
 
 ### Real-time
-- `WS /ws` — WebSocket endpoint. Server pushes `Event` objects whenever device state changes, regardless of trigger source.
+- `WS /api/ws` — WebSocket endpoint. Server pushes `Event` objects whenever device state changes, regardless of trigger source.
 
 ## Touchscreen UI design
 
@@ -189,7 +189,7 @@ The touchscreen UI is a single-page dashboard split into two columns, designed f
 
 **Right column, lower section — schedules panel.** A compact list of schedules showing trigger time (e.g., "11:00 PM"), scene name, and an on/off pill badge. Tapping the pill toggles `enabled` via `PATCH /schedules/{id}`. Provides at-a-glance visibility into automation without a separate settings page.
 
-**Real-time sync.** The UI maintains a persistent WebSocket connection to `ws://localhost:8000/ws`. The server pushes state changes regardless of trigger source. If the 11pm Bedtime schedule fires while the user is looking at the screen, all toggles flip without any interaction. Initial state loads from `GET /devices/` on page load, then incremental updates via WebSocket.
+**Real-time sync.** The UI maintains a persistent WebSocket connection to `ws://localhost:8003/api/ws`. The server pushes state changes regardless of trigger source. If the 11pm Bedtime schedule fires while the user is looking at the screen, all toggles flip without any interaction. Initial state loads from `GET /devices/` on page load, then incremental updates via WebSocket.
 
 **Design constraints.** Flat and minimal aesthetic. No gradients or shadows. Minimum 44px touch target height per row. Green for "on" states, neutral gray for "off." Assumes landscape orientation on a 7-inch Pi touchscreen but the two-column grid stacks to single-column on narrower displays.
 
@@ -205,7 +205,7 @@ The touchscreen UI is a single-page dashboard split into two columns, designed f
 ## Summary of dependency flow
 
 ```
-interfaces/ & web/  →  (HTTP/WS)  →  core/api.py
+interfaces/ & frontend/  →  (HTTP/WS)  →  core/api.py
                                         ↓
                                core/scenes.py
                                core/scheduler.py

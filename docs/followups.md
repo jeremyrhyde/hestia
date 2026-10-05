@@ -55,18 +55,16 @@ Items consciously deferred during the Phase 1–5 build. Each entry: what, why d
 ## UI enhancements (deferred from Phase 4a)
 
 ### Light theme
-- **What:** Dark theme is the only Phase 4a ship. A daytime kitchen-counter Pi may want light.
-- **How to apply:** the design tokens live at `:root` in `web/style.css`. A second token block under `[data-theme="light"]` plus a small toggle in the header would do it. Phase 4a explicitly chose to defer.
-- **Revisit:** if a user reports glare or readability issues during the day.
+**Done** (2026-10): Settings → Theme (Dark/Light/Auto), tokens in frontend/src/styles/tokens.css.
 
 ### Schedule editing UI
 - **What:** Phase 4a surfaces schedules read-only with an enable/disable pill. The API supports full CRUD (`POST/PATCH/DELETE /schedules/`), but creating/editing/deleting schedules is not in the touchscreen UI yet.
-- **How to apply:** lives naturally under a future "Settings" tab. The tab-shell pattern in `index.html` already supports adding tabs additively — it's `<button>` + `<section x-show="tab==='settings'">` plus the form components.
+- **How to apply:** A Settings tab now exists (frontend/src/screens/SettingsScreen.svelte); add a Schedules section there backed by POST/PATCH/DELETE /api/schedules/.
 - **Revisit:** when the user wants to manage schedules without curl.
 
 ### Media volume slider
 - **What:** Phase 4a's media controls are play / pause / track-display only. Volume control via `set_volume` is supported by the driver and API but not surfaced.
-- **How to apply:** trivial — the dimmer slider pattern in the device row generalizes to volume. Add a slider element bound to `setVolume(dev, level)`.
+- **How to apply:** trivial — `components/Slider.svelte` (used for dimmers) generalizes to volume. Add a slider element bound to `setVolume(dev, level)`.
 - **Revisit:** after the Spotify spotifyd audio path is fully working (deferred via the `spotifyd` followup).
 
 ## Decisions parked

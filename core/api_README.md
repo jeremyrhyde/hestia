@@ -48,8 +48,8 @@ subsequent steps.
 ## Static files / UI path
 
 The single-page touchscreen UI built by Phase 4a is mounted at
-**`/`** when `WEB_DIR` (default `./web`) exists. So
-`http://<pi>:8003/` serves `web/index.html`. It is mounted last, after the API
+**`/`** when `WEB_DIR` (default `./frontend/dist`) exists. So
+`http://<pi>:8003/` serves the built frontend (`frontend/dist/index.html`). It is mounted last, after the API
 routes and `/health`, because a mount at `/` matches every path.
 
 If `WEB_DIR` is missing at startup the mount is skipped and a warning

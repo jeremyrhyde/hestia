@@ -1,3 +1,5 @@
+> Historical build plan. The web UI described here has been replaced by the Svelte frontend in `frontend/` (see frontend/README.md).
+
 # Home automation — agentic build plan
 
 ## How to use this document
