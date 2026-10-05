@@ -32,7 +32,7 @@ help:
 	@echo "Hestia — make targets"
 	@echo ""
 	@echo "Pipeline (Linux + macOS):"
-	@echo "  make setup          Ensure uv and Node 20+ are installed"
+	@echo "  make setup          Ensure uv and Node 22.12+ (or 20.19+) are installed"
 	@echo "  make build          Sync deps, byte-compile, build the frontend"
 	@echo "  make check          Type-check the frontend (svelte-check + tsc)"
 	@echo "  make run            Start the server in the foreground"
@@ -103,7 +103,11 @@ help:
 # Setup / build
 # ---------------------------------------------------------------------------
 
-# setup — ensure uv and Node 20+ exist. Idempotent; uses the official
+# Exit 0 only for a Node the frontend toolchain supports (vite 8 / vitest 5):
+# >=22.12, or 20.19 to <21.
+NODE_VERSION_OK = node -e 'const [a,b]=process.versions.node.split(".").map(Number);process.exit(a>22||(a===22&&b>=12)||(a===20&&b>=19)?0:1)'
+
+# setup — ensure uv and Node 22.12+ (or 20.19+) exist. Idempotent; uses the official
 # installer only when uv is missing, preferring curl and falling back to wget.
 .PHONY: setup
 setup:
@@ -121,10 +125,10 @@ setup:
 		fi; \
 		echo "uv installed to $(HOME)/.local/bin — ensure it is on your PATH."; \
 	fi
-	@if command -v node >/dev/null 2>&1 && [ "$$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null)" -ge 20 ] 2>/dev/null; then \
+	@if command -v node >/dev/null 2>&1 && $(NODE_VERSION_OK); then \
 		echo "node present: $$(node --version)"; \
 	else \
-		echo "Node.js 20+ not found — installing (needed to build the UI)..."; \
+		echo "Node.js 22.12+ (or 20.19+) not found — installing (needed to build the UI)..."; \
 		if [ "$$(uname)" = "Darwin" ]; then \
 			command -v brew >/dev/null 2>&1 || { echo "ERROR: Homebrew required. Install from https://brew.sh, then re-run 'make setup'."; exit 1; }; \
 			brew install node; \
@@ -132,19 +136,19 @@ setup:
 			command -v curl >/dev/null 2>&1 || { echo "ERROR: need curl to install Node. Install curl, then re-run 'make setup'."; exit 1; }; \
 			SUDO=""; [ "$$(id -u)" -ne 0 ] && SUDO="sudo"; \
 			if [ -n "$$SUDO" ] && ! sudo -n true 2>/dev/null; then echo "  (installing Node system-wide — you may be prompted for your sudo password)"; fi; \
-			curl -fsSL https://deb.nodesource.com/setup_20.x -o /tmp/nodesource_setup.sh && \
+			curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource_setup.sh && \
 			$$SUDO bash /tmp/nodesource_setup.sh && \
 			$$SUDO apt-get install -y nodejs && \
 			rm -f /tmp/nodesource_setup.sh; \
 		else \
-			echo "ERROR: cannot auto-install Node 20+ on this OS."; \
-			echo "  Install Node 20+ from https://nodejs.org/en/download, then re-run 'make setup'."; \
+			echo "ERROR: cannot auto-install Node 22.12+ (or 20.19+) on this OS."; \
+			echo "  Install Node 22.12+ (or 20.19+) from https://nodejs.org/en/download, then re-run 'make setup'."; \
 			exit 1; \
 		fi; \
-		if command -v node >/dev/null 2>&1 && [ "$$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null)" -ge 20 ] 2>/dev/null; then \
+		if command -v node >/dev/null 2>&1 && $(NODE_VERSION_OK); then \
 			echo "node installed: $$(node --version)"; \
 		else \
-			echo "ERROR: Node install did not produce Node 20+ on PATH. See https://nodejs.org/en/download"; \
+			echo "ERROR: Node install did not produce Node 22.12+ (or 20.19+) on PATH. See https://nodejs.org/en/download"; \
 			exit 1; \
 		fi; \
 	fi

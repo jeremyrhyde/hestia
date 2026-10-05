@@ -53,10 +53,10 @@ mkdir -p "$SYSTEMD_USER_DIR"
 echo
 echo "[1/4] uv sync + frontend build..."
 ( cd "$HESTIA_HOME" && "$UV_BIN" sync )
-if command -v node >/dev/null 2>&1 && [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 20 ]; then
+if command -v node >/dev/null 2>&1 && node -e 'const [a,b]=process.versions.node.split(".").map(Number);process.exit(a>22||(a===22&&b>=12)||(a===20&&b>=19)?0:1)'; then
   ( cd "$HESTIA_HOME/frontend" && npm ci && npm run build )
 else
-  echo "  Node 20+ not found — skipping the frontend build (run 'make setup' to install Node)."
+  echo "  Node 22.12+ (or 20.19+) not found — skipping the frontend build (run 'make setup' to install Node)."
 fi
 if [[ ! -f "$HESTIA_HOME/frontend/dist/index.html" ]]; then
   echo "ERROR: frontend/dist missing — run 'make setup build' first, then re-run this installer." >&2
