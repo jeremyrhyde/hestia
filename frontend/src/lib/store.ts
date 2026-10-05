@@ -32,8 +32,10 @@ export interface StoreDeps {
   debounceMs?: number;
 }
 
-/** A scene event within this long of our own run/announcement is ours. */
+/** A scene event during our own run, or within this long after it returns, is ours. */
 export const LOCAL_RUN_WINDOW_MS = 2000;
+/** A schedule announcement waits this long for its scene to finish. */
+export const ANNOUNCE_TTL_MS = 10 * 60_000;
 
 export const LIVE_EVENT_TYPES = [
   'device_state_changed',
@@ -133,7 +135,8 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
   const play = (id: string) => act(id, 'play', undefined, (st) => ({ ...st, power: true }));
   const pause = (id: string) => act(id, 'pause', undefined, (st) => ({ ...st, power: false }));
 
-  /** Dragging: debounced sends; `final` (release/keyboard) sends at once. */
+  /** Dragging: debounced sends; `final` (release/keyboard) sends at once. The
+   *  dim session ends when the latest send settles with nothing queued. */
   function setBrightness(id: string, level: number, opts: { final: boolean }): void {
     const d = find(id);
     if (!d) return;
@@ -146,17 +149,17 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
     if (entry.timer) clearTimeout(entry.timer);
     entry.timer = null;
     if (opts.final) {
-      void sendBrightness(id, level, true);
+      void sendBrightness(id, level);
     } else {
       const e = entry;
       e.timer = setTimeout(() => {
         e.timer = null;
-        void sendBrightness(id, level, false);
+        void sendBrightness(id, level);
       }, debounceMs);
     }
   }
 
-  async function sendBrightness(id: string, level: number, final: boolean): Promise<void> {
+  async function sendBrightness(id: string, level: number): Promise<void> {
     const entry = dimming.get(id);
     if (!entry) return;
     const seq = ++entry.seq;
@@ -173,12 +176,12 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
       }
     } finally {
       end(id);
-      if (final && entry.seq === seq && dimming.get(id) === entry) dimming.delete(id);
+      if (entry.seq === seq && entry.timer === null && dimming.get(id) === entry) dimming.delete(id);
     }
   }
 
   async function runScene(id: string): Promise<boolean> {
-    localRuns.set(id, now());
+    localRuns.set(id, Number.POSITIVE_INFINITY); // in flight: always ours
     try {
       await deps.api.executeScene(id);
       return true;
@@ -186,6 +189,8 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
       const scene = s.scenes.find((x) => x.id === id);
       deps.toast(`${scene?.name ?? id}: ${message(e)}`, 'error');
       return false;
+    } finally {
+      localRuns.set(id, now());
     }
   }
 
@@ -245,7 +250,7 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
         const info = data.info as Device | undefined;
         if (!info || typeof info.id !== 'string') return;
         const i = s.devices.findIndex((d) => d.id === info.id);
-        if (i >= 0) s.devices[i] = info;
+        if (i >= 0) s.devices[i] = isPending(info.id) ? { ...info, state: s.devices[i].state } : info;
         else s.devices.push(info);
         return;
       }
@@ -253,7 +258,9 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
         const id = data.scene_id;
         if (typeof id !== 'string' || recent(localRuns, id)) return;
         s.ripple = { id, n: (s.ripple?.n ?? 0) + 1 };
-        if (!recent(announced, id)) deps.toast(`${s.scenes.find((x) => x.id === id)?.name ?? id} ran`);
+        const a = announced.get(id);
+        announced.delete(id);
+        if (a === undefined || now() - a > ANNOUNCE_TTL_MS) deps.toast(`${s.scenes.find((x) => x.id === id)?.name ?? id} ran`);
         return;
       }
       case 'device_error': {

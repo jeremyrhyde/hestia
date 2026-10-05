@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createStore, initialState, type HestiaState, type StoreDeps } from './store';
+import { ANNOUNCE_TTL_MS, createStore, initialState, type HestiaState, type StoreDeps } from './store';
 import type { Device, DeviceState, Health, Scene, Schedule } from './types';
 
 function deferred<T>() {
@@ -170,6 +170,31 @@ describe('setBrightness', () => {
     await vi.waitFor(() => expect(toast).toHaveBeenCalledWith('Lamp: nope', 'error'));
     expect(dev(s, 'lamp').state.attributes.brightness).toBe(40);
   });
+
+  it('a drag that never sends final still releases the device', async () => {
+    vi.useFakeTimers();
+    const { s, store } = await loaded();
+    store.setBrightness('lamp', 30, { final: false });
+    await vi.advanceTimersByTimeAsync(150);
+    expect(store.isPending('lamp')).toBe(false);
+    store.handleEvent({ type: 'device_state_changed', data: { state: off() }, device_id: 'lamp' });
+    expect(dev(s, 'lamp').state.power).toBe(false);
+  });
+
+  it('a send that lands while the drag continues keeps the device pending', async () => {
+    vi.useFakeTimers();
+    const { store, api } = await loaded();
+    const d = deferred<DeviceState>();
+    api.deviceAction.mockImplementationOnce(() => d.promise);
+    store.setBrightness('lamp', 30, { final: false });
+    await vi.advanceTimersByTimeAsync(150);
+    store.setBrightness('lamp', 40, { final: false });
+    d.resolve(on({ brightness: 30 }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.isPending('lamp')).toBe(true);
+    await vi.advanceTimersByTimeAsync(150);
+    expect(store.isPending('lamp')).toBe(false);
+  });
 });
 
 describe('scenes and schedules', () => {
@@ -271,6 +296,57 @@ describe('live events', () => {
     store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
     expect(toast.mock.calls).toEqual([['Bedtime ran']]);
     expect(s.ripple?.id).toBe('movie');
+  });
+
+  it('device_registered keeps local state while a write is in flight', async () => {
+    const { s, store, api } = await loaded();
+    const write = deferred<DeviceState>();
+    api.deviceAction.mockImplementationOnce(() => write.promise);
+    const p = store.toggle('lamp'); // lamp -> off optimistically
+    store.handleEvent(evt('device_registered', { info: lamp({ name: 'Renamed', state: on() }) }));
+    expect(dev(s, 'lamp').name).toBe('Renamed');
+    expect(dev(s, 'lamp').state.power).toBe(false);
+    write.resolve(off());
+    await p;
+  });
+
+  it('a local run longer than the window is still ours until it completes', async () => {
+    const { s, store, api, toast, advanceClock } = await loaded();
+    const d = deferred<never[]>();
+    api.executeScene.mockImplementationOnce(() => d.promise);
+    const p = store.runScene('movie');
+    advanceClock(5_000);
+    store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
+    expect(s.ripple).toBeNull();
+    expect(toast).not.toHaveBeenCalled();
+    d.resolve([]);
+    await p;
+    store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
+    expect(s.ripple).toBeNull();
+    expect(toast).not.toHaveBeenCalled();
+    advanceClock(2_001);
+    store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
+    expect(s.ripple).toEqual({ id: 'movie', n: 1 });
+    expect(toast).toHaveBeenCalledWith('Movie ran');
+  });
+
+  it('a schedule announcement outlasts a long scene and is consumed once', async () => {
+    const { s, store, toast, advanceClock } = await loaded();
+    store.handleEvent(evt('schedule_triggered', { schedule_id: 'bedtime', scene_id: 'movie' }));
+    advanceClock(5_000);
+    store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
+    expect(toast.mock.calls).toEqual([['Bedtime ran']]);
+    expect(s.ripple?.id).toBe('movie');
+    store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
+    expect(toast.mock.calls.at(-1)).toEqual(['Movie ran']);
+  });
+
+  it('an announcement with no scene run expires', async () => {
+    const { store, toast, advanceClock } = await loaded();
+    store.handleEvent(evt('schedule_triggered', { schedule_id: 'bedtime', scene_id: 'movie' }));
+    advanceClock(ANNOUNCE_TTL_MS + 1);
+    store.handleEvent(evt('scene_executed', { scene_id: 'movie' }));
+    expect(toast).toHaveBeenCalledWith('Movie ran');
   });
 
   it('device_error toasts with the device name', async () => {
