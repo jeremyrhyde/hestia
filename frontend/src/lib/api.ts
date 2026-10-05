@@ -24,6 +24,9 @@ export function detailOf(body: unknown): string | null {
   return null;
 }
 
+/** Give up on a request after this long, so a black-holed network surfaces as an error. */
+export const REQUEST_TIMEOUT_MS = 10_000;
+
 async function request<T>(method: string, path: string, body?: unknown, base = 'api'): Promise<T> {
   let res: Response;
   try {
@@ -33,6 +36,7 @@ async function request<T>(method: string, path: string, body?: unknown, base = '
       method,
       headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch {
     throw new ApiError(0, "Can't reach Hestia");

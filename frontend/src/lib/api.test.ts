@@ -58,6 +58,19 @@ describe('errors', () => {
     expect(err).toMatchObject({ status: 0, message: "Can't reach Hestia" });
   });
 
+  it('every request carries a timeout signal', async () => {
+    const fetch = stubFetch(200, []);
+    await api.devices();
+    expect(fetch.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('a timeout becomes ApiError(0)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new DOMException('timeout', 'TimeoutError'); }));
+    const err = await api.devices().catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err).toMatchObject({ status: 0, message: "Can't reach Hestia" });
+  });
+
   it('a non-2xx uses the server detail', async () => {
     stubFetch(404, { detail: 'device not found' });
     await expect(api.deviceAction('x', 'toggle')).rejects.toMatchObject({ status: 404, message: 'device not found' });
