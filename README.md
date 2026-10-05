@@ -53,7 +53,7 @@ uv run pytest tests/test_schemas.py -v
 ## Run the dev server
 
 ```bash
-# `make setup build run` installs uv and Node 20+, builds the UI and starts the server.
+# `make setup build run` installs uv and Node 22.12+ (or 20.19+), builds the UI and starts the server.
 make run-dev               # uvicorn on :8003 with --reload + Vite UI on :5173
 # UI:    http://localhost:8003/
 # API:   http://localhost:8003/docs
