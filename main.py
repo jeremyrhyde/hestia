@@ -41,7 +41,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from config import Settings, load_devices_config
-from core.api import create_app
+from core.api import create_app, mount_ui
 from core.events import EventBus
 from core.reconciler import StateReconciler
 from core.scenes import SceneEngine
@@ -351,6 +351,7 @@ def build_app(settings: Settings | None = None) -> FastAPI:
         scheduler=placeholder_state,
         ws_manager=WebSocketManager(),
         settings=settings,
+        mount_static=False,
     )
     # FastAPI 0.95+ allows passing lifespan to the constructor, but
     # ``create_app`` doesn't expose it; attach now.
@@ -373,6 +374,8 @@ def build_app(settings: Settings | None = None) -> FastAPI:
             "devices_failed": getattr(app.state, "devices_failed", []),
         }
 
+    # Last: the UI mount at "/" would shadow any route added after it.
+    mount_ui(app, settings)
     return app
 
 

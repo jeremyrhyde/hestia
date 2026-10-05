@@ -57,13 +57,8 @@ if TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 
-UI_MOUNT_PATH = "/ui"
-"""Where static frontend assets are mounted.
-
-Phase 4a (Touchscreen UI) builds the SPA into ``settings.WEB_DIR`` and
-the user opens ``http://<pi>:8000/ui/`` in Chromium kiosk mode. Mounted
-under a sub-path to avoid any chance of shadowing API routes.
-"""
+UI_MOUNT_PATH = "/"
+"""Where static frontend assets are mounted (the Pantheon contract: UI at ``/``)."""
 
 
 # ---------------------------------------------------------------------------
@@ -281,6 +276,25 @@ def _build_ws_router() -> APIRouter:
 # ---------------------------------------------------------------------------
 
 
+def mount_ui(app: FastAPI, settings: "Settings") -> None:
+    """Serve the static UI at ``/``.
+
+    Call this last: a mount at ``/`` matches every path, so any route
+    registered after it is unreachable.
+    """
+
+    web_dir = Path(settings.WEB_DIR)
+    if not web_dir.is_dir():
+        logger.warning(
+            "Static UI directory %s does not exist; skipping mount.", web_dir
+        )
+        return
+    app.mount(
+        UI_MOUNT_PATH, StaticFiles(directory=str(web_dir), html=True), name="ui"
+    )
+    logger.info("Static UI mounted at %s -> %s", UI_MOUNT_PATH, web_dir)
+
+
 def create_app(
     *,
     registry: "DriverRegistry",
@@ -333,21 +347,6 @@ def create_app(
     app.include_router(api)
 
     if mount_static and settings is not None:
-        web_dir = Path(settings.WEB_DIR)
-        if web_dir.exists() and web_dir.is_dir():
-            app.mount(
-                UI_MOUNT_PATH,
-                StaticFiles(directory=str(web_dir), html=True),
-                name="ui",
-            )
-            logger.info(
-                "Static UI mounted at %s -> %s", UI_MOUNT_PATH, web_dir
-            )
-        else:
-            logger.warning(
-                "Static UI directory %s does not exist; skipping mount. "
-                "Phase 4a will create it.",
-                web_dir,
-            )
+        mount_ui(app, settings)
 
     return app

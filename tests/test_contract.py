@@ -39,3 +39,14 @@ def test_every_route_is_under_api_or_is_health(tmp_path):
     stray = [p for p in paths if p != "/health" and not p.startswith("/api/")]
     assert stray == []
     assert "/api/ws" in paths
+
+from fastapi.testclient import TestClient
+
+
+def test_ui_served_at_root_without_shadowing_health(tmp_path):
+    client = TestClient(build_app(_settings(tmp_path)))  # no `with`: lifespan not run
+    root = client.get("/")
+    assert root.status_code == 200
+    assert "contract-test-ui" in root.text
+    assert client.get("/health").json()["status"] == "ok"
+    assert client.get("/ui/").status_code == 404
