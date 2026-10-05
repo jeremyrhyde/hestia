@@ -15,7 +15,7 @@
   <span
     class="live"
     class:open
-    role="status"
+    role="img"
     title={open ? 'Live updates on' : 'Live updates paused — reconnecting'}
     aria-label={open ? 'Live updates on' : 'Live updates paused'}></span>
 </header>

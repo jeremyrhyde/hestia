@@ -3,11 +3,14 @@
   import Icon from './Icon.svelte';
   import { connection } from '../lib/live.svelte';
   import { dur } from '../lib/motion';
+  import { hestia } from '../lib/store.svelte';
 </script>
 
 <!-- Controls stay enabled: device actions are plain REST calls and return the
      new state, so they work without the socket. Only live updates pause. -->
-{#if connection.status === 'reconnecting'}
+<!-- Before the first successful load, FatalScreen already says "Can't reach
+     Hestia", so the banner only shows once the app has loaded. -->
+{#if hestia.ready && connection.status === 'reconnecting'}
   <div class="conn" role="status" transition:slide={{ duration: dur(180) }}>
     <Icon name="wifi-off" size={18} />
     <span>Live updates paused — reconnecting…</span>
