@@ -13,27 +13,27 @@ the contracts in `schemas/`.
 | Method  | Path                              | Body                  | Returns                                  | Errors                                  |
 |---------|-----------------------------------|-----------------------|------------------------------------------|-----------------------------------------|
 | GET     | `/health`                         | —                     | `{status, devices_registered, devices_failed}` | —                                  |
-| GET     | `/devices/`                       | —                     | `list[DeviceInfo]`                       | —                                       |
-| GET     | `/devices/{id}`                   | —                     | `DeviceInfo`                             | 404 unknown device                      |
-| POST    | `/devices/{id}/action`            | `DeviceAction`        | `DeviceState`                            | 404 unknown, 422 malformed body         |
-| GET     | `/scenes/`                        | —                     | `list[Scene]`                            | —                                       |
-| GET     | `/scenes/{id}`                    | —                     | `Scene`                                  | 404 unknown                             |
-| POST    | `/scenes/`                        | `Scene`               | `Scene`                                  | 422 malformed body                      |
-| PUT     | `/scenes/{id}`                    | `Scene`               | `Scene`                                  | 400 path/body id mismatch, 422 malformed |
-| DELETE  | `/scenes/{id}`                    | —                     | 204 no content                           | —                                       |
-| POST    | `/scenes/{id}/execute`            | —                     | `list[result]` per-action results        | 404 unknown                             |
-| GET     | `/schedules/`                     | —                     | `list[Schedule]`                         | —                                       |
-| GET     | `/schedules/{id}`                 | —                     | `Schedule`                               | 404 unknown                             |
-| POST    | `/schedules/`                     | `Schedule`            | `Schedule` (then `scheduler.reload()`)   | 422 malformed                           |
-| PATCH   | `/schedules/{id}`                 | `dict[str, Any]`      | `Schedule` (merged + validated)          | 404 unknown, 422 invalid merge          |
-| DELETE  | `/schedules/{id}`                 | —                     | 204 (then `scheduler.reload()`)          | —                                       |
-| WS      | `/ws`                             | —                     | streamed `Event` JSON                    | —                                       |
+| GET     | `/api/devices/`                       | —                     | `list[DeviceInfo]`                       | —                                       |
+| GET     | `/api/devices/{id}`                   | —                     | `DeviceInfo`                             | 404 unknown device                      |
+| POST    | `/api/devices/{id}/action`            | `DeviceAction`        | `DeviceState`                            | 404 unknown, 422 malformed body         |
+| GET     | `/api/scenes/`                        | —                     | `list[Scene]`                            | —                                       |
+| GET     | `/api/scenes/{id}`                    | —                     | `Scene`                                  | 404 unknown                             |
+| POST    | `/api/scenes/`                        | `Scene`               | `Scene`                                  | 422 malformed body                      |
+| PUT     | `/api/scenes/{id}`                    | `Scene`               | `Scene`                                  | 400 path/body id mismatch, 422 malformed |
+| DELETE  | `/api/scenes/{id}`                    | —                     | 204 no content                           | —                                       |
+| POST    | `/api/scenes/{id}/execute`            | —                     | `list[result]` per-action results        | 404 unknown                             |
+| GET     | `/api/schedules/`                     | —                     | `list[Schedule]`                         | —                                       |
+| GET     | `/api/schedules/{id}`                 | —                     | `Schedule`                               | 404 unknown                             |
+| POST    | `/api/schedules/`                     | `Schedule`            | `Schedule` (then `scheduler.reload()`)   | 422 malformed                           |
+| PATCH   | `/api/schedules/{id}`                 | `dict[str, Any]`      | `Schedule` (merged + validated)          | 404 unknown, 422 invalid merge          |
+| DELETE  | `/api/schedules/{id}`                 | —                     | 204 (then `scheduler.reload()`)          | —                                       |
+| WS      | `/api/ws`                             | —                     | streamed `Event` JSON                    | —                                       |
 
 `DeviceAction`, `DeviceInfo`, `DeviceState`, `Scene`, and `Schedule` are
 defined in `schemas/`. See `schemas/README.md` for field-level docs and
 example payloads.
 
-### Per-action result shape (returned by `POST /scenes/{id}/execute`)
+### Per-action result shape (returned by `POST /api/scenes/{id}/execute`)
 
 ```json
 [
@@ -48,9 +48,9 @@ subsequent steps.
 ## Static files / UI path
 
 The single-page touchscreen UI built by Phase 4a is mounted at
-**`/ui/`** when `WEB_DIR` (default `./web`) exists. So
-`http://<pi>:8000/ui/` serves `web/index.html`. The path is intentionally
-under a sub-prefix so it cannot collide with API routes.
+**`/`** when `WEB_DIR` (default `./web`) exists. So
+`http://<pi>:8003/` serves `web/index.html`. It is mounted last, after the API
+routes and `/health`, because a mount at `/` matches every path.
 
 If `WEB_DIR` is missing at startup the mount is skipped and a warning
 is logged — the API still boots normally so Phase 4a can be developed
@@ -65,7 +65,7 @@ From the repo root:
 
 ```bash
 make run            # python main.py
-make run-dev        # uvicorn main:app --reload --host 0.0.0.0 --port 8000
+make run-dev        # uvicorn main:app --reload --host 0.0.0.0 --port 8003
 ```
 
 Both targets honour `Settings()` from `config.py`, which reads `.env` if
@@ -95,12 +95,12 @@ Each section prints a heading and the curl response. The script uses
 
 ## How to test the WebSocket
 
-`tests/ws_test_client.py` is a small client that connects to `/ws` and
+`tests/ws_test_client.py` is a small client that connects to `/api/ws` and
 prints every event with a local timestamp:
 
 ```bash
 make ws-test                 # uv run python tests/ws_test_client.py
-HESTIA_WS=ws://pi.local:8000/ws make ws-test
+HESTIA_WS=ws://pi.local:8003/api/ws make ws-test
 ```
 
 Trigger an action via `curl` (or the touchscreen UI, once it's built)
@@ -143,7 +143,7 @@ Phase 3 reconciliation moved the `DEVICE_STATE_CHANGED` publish from
 `SceneEngine` into `DriverRegistry.execute_action`. That means the bus
 broadcast is uniform whether the action came from:
 
-- a direct `POST /devices/{id}/action` (source `"api"`),
+- a direct `POST /api/devices/{id}/action` (source `"api"`),
 - a scene execution (source `"scene:{scene.id}"`), or
 - the scheduler (source eventually `"scene:{scene.id}"` via the engine).
 

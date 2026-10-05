@@ -1,8 +1,8 @@
 /* Hestia touchscreen UI — single Alpine.js state object.
  *
  * Architecture:
- *   - REST: fetch() against /devices/, /scenes/, /schedules/, /health
- *   - Realtime: WebSocket /ws receives Event JSON; applyEvent() patches state
+ *   - REST: fetch() against api/devices/, api/scenes/, api/schedules/, health (relative)
+ *   - Realtime: WebSocket api/ws receives Event JSON; applyEvent() patches state
  *   - Optimism: user actions flip UI immediately; revert on HTTP failure
  *
  * No build step. No external deps beyond Alpine.js (loaded via CDN in index.html).
@@ -44,18 +44,18 @@ function app() {
       ]);
 
       if (devices.status === 'fulfilled') this.devices = devices.value || [];
-      else console.error('refreshAll: /devices/', devices.reason);
+      else console.error('refreshAll: api/devices/', devices.reason);
 
       if (scenes.status === 'fulfilled') this.scenes = scenes.value || [];
-      else console.error('refreshAll: /scenes/', scenes.reason);
+      else console.error('refreshAll: api/scenes/', scenes.reason);
 
       if (schedules.status === 'fulfilled') this.schedules = schedules.value || [];
-      else console.error('refreshAll: /schedules/', schedules.reason);
+      else console.error('refreshAll: api/schedules/', schedules.reason);
 
       if (health.status === 'fulfilled') {
         this.boot_failures = health.value?.devices_failed || [];
       } else {
-        console.error('refreshAll: /health', health.reason);
+        console.error('refreshAll: health', health.reason);
       }
     },
 

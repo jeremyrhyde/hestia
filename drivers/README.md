@@ -140,7 +140,7 @@ KASA_HOST=192.168.1.6 uv run python tests/test_kasa_driver.py
 
 # Tandem hardware: there's no dedicated CLI yet — register the fixture in
 # devices.yaml, boot the server, and curl the fixture endpoint:
-curl -X POST http://localhost:8000/devices/living-room-fixture/action \
+curl -X POST http://localhost:8003/api/devices/living-room-fixture/action \
   -H 'Content-Type: application/json' \
   -d '{"action": "toggle"}'
 ```

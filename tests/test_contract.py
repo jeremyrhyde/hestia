@@ -5,18 +5,19 @@ files work standalone (http://pi:8003/) and behind Pantheon's gateway
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
+from fastapi.routing import APIRoute, APIWebSocketRoute
+from fastapi.testclient import TestClient
+
 from config import Settings
+from main import build_app
 
 
 def test_default_port_is_8003(monkeypatch):
     monkeypatch.delenv("PORT", raising=False)
     assert Settings(_env_file=None).PORT == 8003
-
-from pathlib import Path
-
-from fastapi.routing import APIRoute, APIWebSocketRoute
-
-from main import build_app
 
 
 def _settings(tmp_path: Path) -> Settings:
@@ -40,8 +41,6 @@ def test_every_route_is_under_api_or_is_health(tmp_path):
     assert stray == []
     assert "/api/ws" in paths
 
-from fastapi.testclient import TestClient
-
 
 def test_ui_served_at_root_without_shadowing_health(tmp_path):
     client = TestClient(build_app(_settings(tmp_path)))  # no `with`: lifespan not run
@@ -51,7 +50,6 @@ def test_ui_served_at_root_without_shadowing_health(tmp_path):
     assert client.get("/health").json()["status"] == "ok"
     assert client.get("/ui/").status_code == 404
 
-import re
 
 WEB = Path(__file__).resolve().parent.parent / "web"
 

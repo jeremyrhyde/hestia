@@ -64,7 +64,7 @@ await store.close()     # closes connection, unsubscribes
 
 | Type (string) | Published by | `data` payload | Typical subscribers |
 |---------------|--------------|----------------|---------------------|
-| `device_state_changed` | `SceneEngine` after each action; Phase 3 `core/api.py` after direct `POST /devices/{id}/action` | `{"state": <DeviceState>}` (with `device_id` set) | `StateStore` (auto-persist), `WebSocketManager` (broadcast to UI) |
+| `device_state_changed` | `SceneEngine` after each action; Phase 3 `core/api.py` after direct `POST /api/devices/{id}/action` | `{"state": <DeviceState>}` (with `device_id` set) | `StateStore` (auto-persist), `WebSocketManager` (broadcast to UI) |
 | `scene_executed` | `SceneEngine` once after the action loop | `{"scene_id": str, "results": [{"device_id", "success", "state", "error"}, ...]}` | `WebSocketManager`, future analytics |
 | `schedule_triggered` | `Scheduler` when a schedule's `HH:MM` matches | `{"schedule_id": str, "scene_id": str}` | Diagnostics / logging |
 | `device_registered` | Phase 3 `main.py` / driver registry on startup | `{"info": <DeviceInfo>}` | `StateStore` (event log) |

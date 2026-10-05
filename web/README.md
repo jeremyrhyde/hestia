@@ -1,7 +1,7 @@
 # `web/` — touchscreen UI
 
 The Phase 4a single-page dashboard. Served by the FastAPI core under
-**`/ui/`**, opened in fullscreen Chromium kiosk mode on the Pi's
+**`/`**, opened in fullscreen Chromium kiosk mode on the Pi's
 touchscreen, and works in any modern browser for development on macOS /
 Linux / mobile.
 
@@ -19,7 +19,7 @@ Three live regions:
 - **Scenes** — a 2-column grid of large tappable cards. Tap = run.
 - **Schedules** — a compact list with on/off pills.
 
-State stays in sync via a persistent WebSocket on `/ws`. If a scene
+State stays in sync via a persistent WebSocket on `/api/ws`. If a scene
 fires from the scheduler, voice, or another tab, every connected client
 updates without any user interaction. Optimistic updates make local
 taps feel instant; the WS event reconciles authoritative state.
@@ -31,7 +31,7 @@ From the repo root:
 ```bash
 make run-dev          # uvicorn main:app --reload
 # in your browser:
-open http://localhost:8000/ui/
+open http://localhost:8003/
 ```
 
 Edit any file in `web/`. Hard-refresh in the browser
@@ -41,7 +41,7 @@ To exercise the WebSocket while the UI is open, fire commands from a
 second terminal:
 
 ```bash
-curl -s -X POST http://localhost:8000/devices/relay-desk/action \
+curl -s -X POST http://localhost:8003/api/devices/relay-desk/action \
   -H 'Content-Type: application/json' -d '{"action":"toggle"}'
 ```
 
@@ -88,20 +88,20 @@ are methods on the same object so templates can call them directly.
    page load
        │
        ▼
-   refreshAll()  ──►  GET /devices/, /scenes/, /schedules/, /health   (Promise.allSettled)
+   refreshAll()  ──►  GET api/devices/, api/scenes/, api/schedules/, health   (Promise.allSettled)
        │
        ▼
-   connectWebSocket()  ──►  ws://host/ws    (exponential backoff on close)
+   connectWebSocket()  ──►  ws://host/api/ws    (exponential backoff on close)
        │
        ▼
    user taps                                  server pushes event
        │                                              │
        ▼                                              ▼
-   optimistic flip       POST /devices/:id/action  applyEvent(event)
+   optimistic flip       POST api/devices/:id/action  applyEvent(event)
        │                          │                  │
        ▼                          ▼                  ▼
-   re-sync from response     /scenes/:id/execute   patch matching device
-                            PATCH /schedules/:id   flash scene card
+   re-sync from response     api/scenes/:id/execute   patch matching device
+                            PATCH api/schedules/:id   flash scene card
 ```
 
 Optimism is *intentional*. Every user-driven mutation flips local state
@@ -170,7 +170,7 @@ arrive as an array on `DeviceInfo.capabilities`. To wire a new one:
    `<template x-if="hasCap(dev, 'your_cap')">…</template>` block with
    the control markup.
 3. Add a handler method in `app.js` that POSTs to
-   `/devices/:id/action` with the right `action` verb. Mirror the
+   `api/devices/:id/action` with the right `action` verb. Mirror the
    optimistic-flip + revert pattern of `toggleDevice` /
    `setBrightness`.
 4. (Optional) Extend `iconForDevice()` to pick a more specific icon
@@ -208,11 +208,11 @@ journalctl --user -u hestia-kiosk.service -f
 ```
 
 You should see a fullscreen browser pointed at
-`http://localhost:8000/ui/`. To override the URL (e.g. for a remote
+`http://localhost:8003/`. To override the URL (e.g. for a remote
 Pi):
 
 ```bash
-HESTIA_UI_URL=http://hestia.local:8000/ui/ ~/hestia/web/kiosk/start-kiosk.sh
+HESTIA_UI_URL=http://hestia.local:8003/ ~/hestia/web/kiosk/start-kiosk.sh
 ```
 
 The script also disables DPMS, screen blanking, and screen saver — the
@@ -222,12 +222,11 @@ touchscreen will stay lit indefinitely.
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| **Empty page at `/ui/`** | `WEB_DIR` doesn't exist or wasn't mounted | Confirm `web/index.html` exists; check server log for `"Static UI mounted at /ui/"`. The mount is silent if `WEB_DIR` is missing. |
-| **`/ui` (no slash) returns 404** | StaticFiles only serves under the trailing-slash form | Always link as `/ui/`. |
+| **Empty page at `/`** | `WEB_DIR` doesn't exist or wasn't mounted | Confirm `web/index.html` exists; check server log for `"Static UI mounted at / -> ..."`. The mount is silent if `WEB_DIR` is missing. |
 | **Toggles flip but revert** | The HTTP call returned non-2xx | DevTools → Network. Check server log; expect a stack trace from the driver. |
-| **No live updates** | WebSocket never connected | DevTools → Network → WS — the `/ws` row should be 101. The header dot is gray when offline. |
+| **No live updates** | WebSocket never connected | DevTools → Network → WS — the `/api/ws` row should be 101. The header dot is gray when offline. |
 | **WS connects then immediately drops** | Reverse proxy stripping `Upgrade` headers | Bypass any proxy for development; or configure your proxy to forward `Upgrade` and `Connection`. |
-| **CORS errors** | UI loaded from a different origin than the API | The shipped layout is same-origin (`/ui/` and `/devices/` served from one process). Cross-origin layouts need `fastapi.middleware.cors` and a different deploy story. |
+| **CORS errors** | UI loaded from a different origin than the API | The shipped layout is same-origin (`/` and `/api/devices/` served from one process). Cross-origin layouts need `fastapi.middleware.cors` and a different deploy story. |
 | **Schedules show wrong time** | Pi clock not in sync | `timedatectl status` on the Pi; install `systemd-timesyncd` or `chrony`. |
 | **Touch targets miss** | Custom Pi DPI / tablet mode | All controls are sized to ≥44px, but kiosk DPI scaling can interact oddly — try `--force-device-scale-factor=1.0` in the kiosk script. |
 | **Scene flash never appears** | Server `scene_executed` event not firing | Confirm `core/scenes.py` publishes after each step; check the WS test client (`make ws-test`) for the event. |
@@ -239,14 +238,14 @@ authoritative spec.
 
 | Method | Path | When |
 |--------|------|------|
-| GET    | `/devices/`           | page load (refreshAll) |
-| POST   | `/devices/:id/action` | every toggle / play / pause / set_brightness |
-| GET    | `/scenes/`            | page load |
-| POST   | `/scenes/:id/execute` | scene card tap |
-| GET    | `/schedules/`         | page load |
-| PATCH  | `/schedules/:id`      | pill toggle |
-| GET    | `/health`             | page load — boot-failure banner |
-| WS     | `/ws`                 | persistent — receives `Event` JSON |
+| GET    | `/api/devices/`           | page load (refreshAll) |
+| POST   | `/api/devices/:id/action` | every toggle / play / pause / set_brightness |
+| GET    | `/api/scenes/`            | page load |
+| POST   | `/api/scenes/:id/execute` | scene card tap |
+| GET    | `/api/schedules/`         | page load |
+| PATCH  | `/api/schedules/:id`      | pill toggle |
+| GET    | `/health`                 | page load — boot-failure banner |
+| WS     | `/api/ws`                 | persistent — receives `Event` JSON |
 
 Event types consumed: `device_state_changed`, `scene_executed`,
 `device_registered`, `device_error`. Other types are logged at debug

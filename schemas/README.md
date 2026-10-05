@@ -79,7 +79,7 @@ Full device record.
 
 ### `DeviceAction`
 
-Body of `POST /devices/{id}/action`.
+Body of `POST /api/devices/{id}/action`.
 
 | Field | Type | Default | Meaning |
 |-------|------|---------|---------|
