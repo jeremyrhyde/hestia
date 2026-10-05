@@ -30,7 +30,7 @@
       <Icon name="lightbulb" size={16} />{lightsOn} {lightsOn === 1 ? 'light' : 'lights'} on
     </span>
     {#if next}
-      <span class="chip-lg"><Icon name="clock" size={16} />Next: {next.schedule.name} · {formatTime(next.schedule.time, prefs.clock)}</span>
+      <span class="chip-lg next"><Icon name="clock" size={16} /><span class="truncate">Next: {next.schedule.name} · {formatTime(next.schedule.time, prefs.clock)}</span></span>
     {/if}
   </div>
   <button class="btn" disabled={lightsOn === 0} onclick={allOff}><Icon name="power" size={18} />All off</button>
@@ -53,15 +53,19 @@
   .when { display: grid; line-height: 1.1; }
   .time { font-size: var(--text-2xl); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .date { font-size: var(--text-sm); }
-  .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  /* One row in landscape so the header stays within its 72px cap; Next truncates. */
+  .chips { display: flex; flex-wrap: nowrap; overflow: hidden; min-width: 0; gap: var(--space-2); }
   .chip-lg {
     display: inline-flex; align-items: center; gap: var(--space-1);
     padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill);
     background: var(--color-surface-2); color: var(--color-text-muted); font-size: var(--text-sm);
+    white-space: nowrap; flex-shrink: 0;
   }
+  .chip-lg.next { flex-shrink: 1; min-width: 0; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .chip-lg.lit { color: var(--color-lamp); background: var(--color-lamp-soft); }
   @media (orientation: portrait) {
     .glance { grid-template-columns: 1fr auto; max-height: none; }
-    .chips { grid-column: 1 / -1; grid-row: 2; }
+    .chips { grid-column: 1 / -1; grid-row: 2; flex-wrap: wrap; }
   }
 </style>
