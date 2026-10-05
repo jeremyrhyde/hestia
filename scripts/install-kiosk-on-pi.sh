@@ -68,9 +68,9 @@ fi
 # 1. Install hestia-kiosk.service.
 echo
 echo "[1/4] writing hestia-kiosk.service..."
-render_unit "$HESTIA_HOME/web/kiosk/hestia-kiosk.service" \
+render_unit "$HESTIA_HOME/deploy/kiosk/hestia-kiosk.service" \
             "$SYSTEMD_USER_DIR/hestia-kiosk.service"
-chmod +x "$HESTIA_HOME/web/kiosk/start-kiosk.sh"
+chmod +x "$HESTIA_HOME/deploy/kiosk/start-kiosk.sh"
 
 # 2. Install kiosk dependencies (chromium + unclutter, plus X stack if headless).
 echo

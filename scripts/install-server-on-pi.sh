@@ -49,10 +49,19 @@ fi
 
 mkdir -p "$SYSTEMD_USER_DIR"
 
-# 1. uv sync — make sure the venv is built.
+# 1. uv sync + frontend build — the server serves frontend/dist at /.
 echo
-echo "[1/4] uv sync..."
+echo "[1/4] uv sync + frontend build..."
 ( cd "$HESTIA_HOME" && "$UV_BIN" sync )
+if command -v node >/dev/null 2>&1 && [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 20 ]; then
+  ( cd "$HESTIA_HOME/frontend" && npm ci && npm run build )
+else
+  echo "  Node 20+ not found — skipping the frontend build (run 'make setup' to install Node)."
+fi
+if [[ ! -f "$HESTIA_HOME/frontend/dist/index.html" ]]; then
+  echo "ERROR: frontend/dist missing — run 'make setup build' first, then re-run this installer." >&2
+  exit 1
+fi
 
 # 2. Install hestia.service.
 echo

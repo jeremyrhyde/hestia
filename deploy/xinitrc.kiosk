@@ -14,4 +14,4 @@ matchbox-window-manager -use_titlebar no &
 
 # Wait briefly for the WM to register, then launch the kiosk launcher.
 sleep 1
-exec @HESTIA_HOME@/web/kiosk/start-kiosk.sh
+exec @HESTIA_HOME@/deploy/kiosk/start-kiosk.sh

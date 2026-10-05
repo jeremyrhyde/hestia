@@ -5,7 +5,7 @@
 # from an X session for testing.
 set -euo pipefail
 
-# Load .env from the repo root (two levels up: web/kiosk/ -> repo) if present,
+# Load .env from the repo root (two levels up: deploy/kiosk/ -> repo) if present,
 # so SERVER_IP_ADDRESS / HESTIA_UI_URL can be set there. We do this in-script
 # (rather than relying on systemd's EnvironmentFile) so it works across every
 # launch path: the systemd kiosk unit, the headless xinitrc, and running this

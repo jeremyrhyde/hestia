@@ -20,7 +20,7 @@ Wants=hestia.service
 
 [Service]
 Type=simple
-ExecStart=@HESTIA_HOME@/web/kiosk/start-kiosk.sh
+ExecStart=@HESTIA_HOME@/deploy/kiosk/start-kiosk.sh
 Restart=on-failure
 RestartSec=5
 
