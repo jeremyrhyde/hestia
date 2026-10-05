@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d1117" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f8fa" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Hestia" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%icon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%favicon-32.png" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <title>Hestia</title>
+    <script>
+      // Apply stored display prefs before first paint (mirrors src/lib/preferences.ts).
+      try {
+        var p = JSON.parse(localStorage.getItem('hestia.prefs.v1') || '{}') || {};
+        var d = document.documentElement;
+        var t = p.theme === 'light' || p.theme === 'auto' ? p.theme : 'dark';
+        if (t !== 'auto') d.dataset.theme = t;
+        if (p.motion === 'full' || p.motion === 'reduced') d.dataset.motion = p.motion;
+        if (p.density === 'compact') d.dataset.density = 'compact';
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
