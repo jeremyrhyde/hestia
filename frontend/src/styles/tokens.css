@@ -1,0 +1,129 @@
+/* Design tokens. Every color, radius, spacing, duration and type size used by
+ * a component is one of these — no hex in components. Names match Apollo's
+ * (whose palette came from Hestia's). Dark is the base; light applies when the
+ * user picks Light, or picks Auto on a light-mode OS. The two light blocks
+ * must stay identical (tokens.test.ts checks). */
+
+:root {
+  color-scheme: dark;
+
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-surface-2: #1f2630;
+  --color-surface-3: #2a323d;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-text-faint: #6e7681;
+  --color-border: #30363d;
+  --color-border-soft: #21262d;
+  --color-accent: #4ade80;
+  --color-accent-soft: #4ade8030;
+  --color-accent-dim: #22c55e;
+  --color-danger: #f87171;
+  --color-warn: #fbbf24;
+  --color-warn-soft: #fbbf2422;
+  --color-on-accent: #0d1117;
+  /* Hestia: warm lamp light for "on" lights, and switch knobs. */
+  --color-lamp: #fbbf24;
+  --color-lamp-soft: #fbbf2433;
+  --color-knob: #ffffff;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 48px;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2.25rem;
+
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --nav-duration: 220ms;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --font-stack: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --tap-min: 44px;
+  --header-h: 44px;
+  --pill-h: 56px;
+  --tile-h: 92px;
+  --content-max: 960px;
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+:root[data-density='compact'] {
+  --tile-h: 76px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --color-bg: #f6f8fa;
+    --color-surface: #ffffff;
+    --color-surface-2: #eef1f4;
+    --color-surface-3: #dde2e8;
+    --color-text: #1f2328;
+    --color-text-muted: #59636e;
+    --color-text-faint: #818b98;
+    --color-border: #d1d9e0;
+    --color-border-soft: #e5eaef;
+    --color-accent: #16a34a;
+    --color-accent-soft: #16a34a22;
+    --color-accent-dim: #15803d;
+    --color-danger: #dc2626;
+    --color-warn: #b45309;
+    --color-warn-soft: #b4530922;
+    --color-on-accent: #ffffff;
+    --color-lamp: #d97706;
+    --color-lamp-soft: #f59e0b2e;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.12);
+  }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f6f8fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef1f4;
+  --color-surface-3: #dde2e8;
+  --color-text: #1f2328;
+  --color-text-muted: #59636e;
+  --color-text-faint: #818b98;
+  --color-border: #d1d9e0;
+  --color-border-soft: #e5eaef;
+  --color-accent: #16a34a;
+  --color-accent-soft: #16a34a22;
+  --color-accent-dim: #15803d;
+  --color-danger: #dc2626;
+  --color-warn: #b45309;
+  --color-warn-soft: #b4530922;
+  --color-on-accent: #ffffff;
+  --color-lamp: #d97706;
+  --color-lamp-soft: #f59e0b2e;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
