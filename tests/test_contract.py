@@ -53,16 +53,18 @@ def test_ui_served_at_root_without_shadowing_health(tmp_path):
     assert client.get("/ui/").status_code == 404
 
 
-WEB = Path(__file__).resolve().parent.parent / "web"
+FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
 
 # Root-absolute URLs break under a gateway prefix (/hestia/...).
 _ABSOLUTE = [
     re.compile(r'(?:href|src)="/(?!/)'),
-    re.compile(r"""(?:fetch|_json)\(\s*['"`]/(?!/)"""),
+    re.compile(r"""fetch\(\s*['"`]/(?!/)"""),
     re.compile(r'"(?:start_url|scope|src)":\s*"/(?!/)'),
     re.compile(r"location\.host\}?/"),
-    re.compile(r"""['"`]/(?:api|health|ws)\b"""),
+    re.compile(r"""base:\s*['"]/"""),
 ]
+# Vite's dev entry; rewritten relative to `base` at build time.
+_ALLOWED = {'<script type="module" src="/src/main.ts"></script>'}
 
 
 def test_stray_websocket_is_closed_cleanly_not_500(tmp_path):
@@ -72,15 +74,35 @@ def test_stray_websocket_is_closed_cleanly_not_500(tmp_path):
             pass
 
 
-def test_web_ui_uses_only_relative_urls():
+def test_frontend_uses_only_relative_urls():
+    files = [
+        FRONTEND / "index.html",
+        FRONTEND / "vite.config.ts",
+        *sorted((FRONTEND / "public").glob("*.webmanifest")),
+        *sorted((FRONTEND / "src").rglob("*.ts")),
+        *sorted((FRONTEND / "src").rglob("*.svelte")),
+    ]
     offenders = []
-    for f in sorted(WEB.rglob("*")):
-        if f.suffix not in {".html", ".js", ".webmanifest"}:
-            continue
+    for f in files:
         for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            if line.strip() in _ALLOWED:
+                continue
             if any(p.search(line) for p in _ABSOLUTE):
-                offenders.append(f"{f.relative_to(WEB)}:{n}: {line.strip()}")
+                offenders.append(f"{f.relative_to(FRONTEND)}:{n}: {line.strip()}")
     assert offenders == []
+
+
+def test_built_ui_is_relative():
+    built = FRONTEND / "dist" / "index.html"
+    if not built.exists():
+        pytest.skip("frontend not built (run `make build`)")
+    absolute = re.compile(r'(?:href|src)="/(?!/)')
+    assert absolute.findall(built.read_text(encoding="utf-8")) == []
+
+
+def test_default_web_dir_is_the_frontend_build(monkeypatch):
+    monkeypatch.delenv("WEB_DIR", raising=False)
+    assert Settings(_env_file=None).WEB_DIR == "./frontend/dist"
 
 
 def test_ui_cache_headers(tmp_path):

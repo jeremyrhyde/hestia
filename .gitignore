@@ -21,6 +21,7 @@ logs/
 
 # Frontend
 node_modules/
+frontend/dist/
 
 # Editors / OS / sync tools
 .DS_Store

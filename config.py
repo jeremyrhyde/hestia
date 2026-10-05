@@ -31,8 +31,8 @@ class Settings(BaseSettings):
         DB_PATH: Filesystem path to the SQLite database. Default
             ``"./home-auto.db"``.
         LOG_LEVEL: Log level passed to uvicorn / loggers. Default ``"info"``.
-        WEB_DIR: Directory containing the static frontend served by FastAPI.
-            Default ``"./web"``.
+        WEB_DIR: Directory containing the built frontend served by FastAPI
+            (``make build`` produces it). Default ``"./frontend/dist"``.
         DEVICES_CONFIG_PATH: YAML file describing the registered devices.
             Default ``"./devices.yaml"``. The Phase 3 API entry point reads
             this file at startup to instantiate drivers.
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     PORT: int = 8003
     DB_PATH: str = "./home-auto.db"
     LOG_LEVEL: str = "info"
-    WEB_DIR: str = "./web"
+    WEB_DIR: str = "./frontend/dist"
     DEVICES_CONFIG_PATH: str = "./devices.yaml"
     RECONCILE_POLL_SECONDS: float = Field(default=7.0, gt=0)
 
