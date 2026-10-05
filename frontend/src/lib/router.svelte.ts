@@ -42,9 +42,18 @@ export function initRouter(): () => void {
   }
   router.route = parseHash(location.hash);
   const onPopState = (event: SwipePopStateEvent) => {
-    const idx = typeof event.state?.idx === 'number' ? (event.state.idx as number) : 0;
-    const direction = idx < index ? 'back' : 'forward';
-    index = idx;
+    let direction: 'forward' | 'back';
+    if (typeof event.state?.idx === 'number') {
+      const idx = event.state.idx as number;
+      direction = idx < index ? 'back' : 'forward';
+      index = idx;
+    } else {
+      // A hand-typed hash creates a new entry with no state: treat it as a
+      // forward step and stamp it so later back/forward compare correctly.
+      index += 1;
+      history.replaceState({ idx: index }, '');
+      direction = 'forward';
+    }
     const swiped = 'hasUAVisualTransition' in event && event.hasUAVisualTransition === true;
     apply(parseHash(location.hash), direction, !swiped);
   };
