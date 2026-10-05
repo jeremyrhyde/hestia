@@ -167,7 +167,13 @@ export function createStore(s: HestiaState, deps: StoreDeps) {
     try {
       const next = await deps.api.deviceAction(id, 'set_brightness', { level });
       const cur = find(id);
-      if (entry.seq === seq && cur) cur.state = next;
+      if (entry.seq === seq && cur) {
+        // A queued debounce means the finger is still moving: take the server's
+        // state but keep the local level, or the controlled slider snaps back.
+        cur.state = entry.timer === null
+          ? next
+          : { ...next, attributes: { ...next.attributes, brightness: cur.state.attributes.brightness } };
+      }
     } catch (e) {
       if (entry.seq === seq) {
         const cur = find(id);

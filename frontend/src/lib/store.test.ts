@@ -181,6 +181,22 @@ describe('setBrightness', () => {
     expect(dev(s, 'lamp').state.power).toBe(false);
   });
 
+  it('a reply that lands mid-drag does not move the slider back', async () => {
+    vi.useFakeTimers();
+    const { s, store, api } = await loaded();
+    const d = deferred<DeviceState>();
+    api.deviceAction.mockImplementationOnce(() => d.promise);
+    store.setBrightness('lamp', 30, { final: false });
+    await vi.advanceTimersByTimeAsync(150);
+    store.setBrightness('lamp', 60, { final: false });
+    d.resolve(on({ brightness: 30, extra: 'x' }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(dev(s, 'lamp').state.attributes.brightness).toBe(60);
+    expect(dev(s, 'lamp').state.attributes.extra).toBe('x');
+    await vi.advanceTimersByTimeAsync(150);
+    expect(dev(s, 'lamp').state).toEqual(on());
+  });
+
   it('a send that lands while the drag continues keeps the device pending', async () => {
     vi.useFakeTimers();
     const { store, api } = await loaded();
