@@ -133,14 +133,14 @@ html[data-nav='back']::view-transition-new(screen) { animation-name: slide-in-le
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-motion='full']) *,
   :root:not([data-motion='full']) *::before,
-  :root:not([data-motion='full']) *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  :root:not([data-motion='full']) *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   :root:not([data-motion='full'])::view-transition-group(*),
   :root:not([data-motion='full'])::view-transition-old(*),
   :root:not([data-motion='full'])::view-transition-new(*) { animation: none !important; }
 }
 :root[data-motion='reduced'] *,
 :root[data-motion='reduced'] *::before,
-:root[data-motion='reduced'] *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+:root[data-motion='reduced'] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 :root[data-motion='reduced']::view-transition-group(*),
 :root[data-motion='reduced']::view-transition-old(*),
 :root[data-motion='reduced']::view-transition-new(*) { animation: none !important; }
