@@ -8,8 +8,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
 from fastapi.routing import APIRoute, APIWebSocketRoute
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from config import Settings
 from main import build_app
@@ -61,6 +63,13 @@ _ABSOLUTE = [
     re.compile(r"location\.host\}?/"),
     re.compile(r"""['"`]/(?:api|health|ws)\b"""),
 ]
+
+
+def test_stray_websocket_is_closed_cleanly_not_500(tmp_path):
+    client = TestClient(build_app(_settings(tmp_path)))
+    with pytest.raises(WebSocketDisconnect):
+        with client.websocket_connect("/ws"):
+            pass
 
 
 def test_web_ui_uses_only_relative_urls():
