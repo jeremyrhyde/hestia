@@ -36,6 +36,15 @@ capabilities the driver advertises:
 - ``"plug"`` → ``[TOGGLE]``
 - ``"bulb"`` → ``[TOGGLE, DIMMER]`` and accepts ``set_brightness``.
 
+Authentication
+--------------
+
+Newer devices (KLAP / SMART firmware) require the TP-Link cloud account
+credentials they are registered to. Pass ``username`` / ``password`` (main.py
+fills them from ``KASA_USERNAME`` / ``KASA_PASSWORD``) and the driver connects
+through ``Discover.discover_single``, which negotiates the right protocol and
+authenticates. Without credentials it falls back to ``Device.connect``.
+
 Network resilience
 ------------------
 
@@ -70,11 +79,13 @@ from schemas.device import (
 logger = logging.getLogger(__name__)
 
 try:
-    from kasa import Device, KasaException  # type: ignore[import-not-found]
+    from kasa import Credentials, Device, Discover, KasaException  # type: ignore[import-not-found]
 
     _KASA_AVAILABLE = True
 except Exception as exc:  # pragma: no cover - kasa always installed in our env
+    Credentials = None  # type: ignore[assignment, misc]
     Device = None  # type: ignore[assignment, misc]
+    Discover = None  # type: ignore[assignment, misc]
     KasaException = Exception  # type: ignore[assignment, misc]
     _KASA_AVAILABLE = False
     logger.debug("kasa unavailable at import time: %r", exc)
@@ -107,6 +118,9 @@ class KasaDriver(DeviceDriver):
             presented as one logical device).
         kind: Either ``"plug"`` or ``"bulb"``. Determines advertised
             capabilities (bulbs add ``DIMMER``).
+        username: TP-Link cloud account email, for devices that require
+            authentication. Empty means connect without credentials.
+        password: Password for ``username``.
 
     Construction is non-blocking — actual ``Device.connect`` happens lazily
     on the first call so the registry can build the driver dictionary at
@@ -120,6 +134,8 @@ class KasaDriver(DeviceDriver):
         name: str,
         host: str | list[str],
         kind: Literal["plug", "bulb"] = "plug",
+        username: str = "",
+        password: str = "",
     ) -> None:
         if kind not in ("plug", "bulb"):
             raise ValueError(f"KasaDriver: kind must be 'plug' or 'bulb', got {kind!r}")
@@ -129,6 +145,8 @@ class KasaDriver(DeviceDriver):
         self._host = host  # preserve original shape for debug / attributes
         self._hosts = _normalize_hosts(host)
         self._kind = kind
+        self._username = username
+        self._password = password
         # _devices is None until first connect; then a parallel list of handles.
         self._devices: list[Any] | None = None
         self._mock = not _KASA_AVAILABLE
@@ -150,6 +168,11 @@ class KasaDriver(DeviceDriver):
             return self._devices
 
         async def _connect_one(host: str) -> Any:
+            if self._username:
+                return await Discover.discover_single(
+                    host,
+                    credentials=Credentials(self._username, self._password),
+                )
             return await Device.connect(host=host)
 
         try:

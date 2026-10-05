@@ -41,6 +41,11 @@ class Settings(BaseSettings):
             changes (vendor app, device-side schedules, physical switches).
             Default ``7.0``. Must be > 0. Only polls while a UI client is
             connected, so a small value is cheap on a LAN.
+        KASA_USERNAME: TP-Link / Kasa cloud account email. Newer Kasa devices
+            (KLAP / SMART protocol firmware) refuse local control without the
+            credentials of the account they are registered to. Default ``""``
+            (no auth — only older devices answer).
+        KASA_PASSWORD: Password for ``KASA_USERNAME``. Default ``""``.
     """
 
     HOST: str = "0.0.0.0"
@@ -50,6 +55,8 @@ class Settings(BaseSettings):
     WEB_DIR: str = "./frontend/dist"
     DEVICES_CONFIG_PATH: str = "./devices.yaml"
     RECONCILE_POLL_SECONDS: float = Field(default=7.0, gt=0)
+    KASA_USERNAME: str = ""
+    KASA_PASSWORD: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

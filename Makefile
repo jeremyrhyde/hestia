@@ -245,7 +245,7 @@ relay-test:
 .PHONY: kasa-discover
 kasa-discover:
 	@echo "Scanning LAN for Kasa devices (~5s)..."
-	$(UV) run kasa discover
+	$(UV) run $(if $(wildcard .env),--env-file .env) kasa discover
 
 .PHONY: kasa-test
 kasa-test:

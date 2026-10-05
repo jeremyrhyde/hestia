@@ -9,7 +9,9 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "aiosqlite",
-    "python-kasa",
+    # 0.11+: IOT devices on KLAP v2 firmware (e.g. KL125 hw 4.0, fw 1.1.1)
+    # get the v2 handshake; 0.10.x always used v1, so they failed auth.
+    "python-kasa>=0.11.0.1",
     "websockets",
     # gpiozero is Pi-only — skip on macOS / Windows so dev installs work.
     'gpiozero ; sys_platform == "linux"',

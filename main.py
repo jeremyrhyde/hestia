@@ -72,8 +72,12 @@ DRIVER_FACTORY: dict[str, Type[DeviceDriver]] = {
 
 def _build_drivers(
     devices: list[DeviceConfig],
+    settings: Settings | None = None,
 ) -> tuple[list[tuple[str, DeviceDriver]], list[dict[str, Any]]]:
     """Construct one driver per ``DeviceConfig`` entry.
+
+    Kasa drivers get ``KASA_USERNAME`` / ``KASA_PASSWORD`` from *settings*
+    (when given) unless the entry's own ``params`` set them.
 
     Returns ``(drivers, failures)``. A failure dict has the shape::
 
@@ -102,10 +106,12 @@ def _build_drivers(
                 entry.id,
             )
             continue
+        params = dict(entry.params)
+        if entry.driver == "kasa" and settings is not None:
+            params.setdefault("username", settings.KASA_USERNAME)
+            params.setdefault("password", settings.KASA_PASSWORD)
         try:
-            driver = factory(
-                device_id=entry.id, name=entry.name, **entry.params
-            )
+            driver = factory(device_id=entry.id, name=entry.name, **params)
         except Exception as exc:
             failures.append(
                 {
@@ -163,7 +169,7 @@ async def _build_components(
 
     # 4. Driver registry + drivers.
     registry = DriverRegistry(event_bus=bus)
-    constructed, failures = _build_drivers(devices_config.devices)
+    constructed, failures = _build_drivers(devices_config.devices, settings)
     successfully_registered: list[str] = []
     for device_id, driver in constructed:
         # Probe the driver before fully registering. Drivers like KasaDriver
