@@ -18,10 +18,31 @@
 
   let sheetEl: HTMLDivElement | undefined = $state();
 
-  onMount(() => sheetEl?.focus());
+  onMount(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    sheetEl?.focus();
+    return () => {
+      if (previous?.isConnected) previous.focus?.();
+    };
+  });
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') oncancel();
+    if (e.key === 'Escape') {
+      oncancel();
+      return;
+    }
+    if (e.key !== 'Tab' || !sheetEl) return;
+    const focusable = [...sheetEl.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]')];
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === sheetEl)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 </script>
 
