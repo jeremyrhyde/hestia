@@ -14,7 +14,7 @@
 
 <section class="stack" aria-label="Devices">
   {#each hestia.devices as device (device.id)}
-    <div class="device-row" class:on={device.state.power}>
+    <div class="device-row" data-device-id={device.id} class:on={device.state.power}>
       <button class="row-main" onclick={() => navigate(['devices'], { open: device.id }, { replace: true })}>
         <span class="row-icon"><Icon name={deviceIcon(device)} size={24} /></span>
         <span class="row-text">
@@ -39,7 +39,11 @@
 </section>
 
 {#if openDevice}
-  <DeviceSheet device={openDevice} onclose={() => navigate(['devices'], {}, { replace: true })} />
+  {@const id = openDevice.id}
+  <DeviceSheet
+    device={openDevice}
+    fallbackFocus={() => document.querySelector<HTMLElement>(`[data-device-id="${CSS.escape(id)}"] .row-main`)}
+    onclose={() => navigate(['devices'], {}, { replace: true })} />
 {/if}
 
 <style>

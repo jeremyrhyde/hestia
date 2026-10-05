@@ -7,11 +7,11 @@
   import { store } from '../lib/store.svelte';
   import type { Device } from '../lib/types';
 
-  let { device, onclose }: { device: Device; onclose: () => void } = $props();
+  let { device, onclose, fallbackFocus }: { device: Device; onclose: () => void; fallbackFocus?: () => HTMLElement | null } = $props();
   const now = $derived(mediaText(device.state));
 </script>
 
-<Sheet title={device.name} {onclose}>
+<Sheet title={device.name} {onclose} {fallbackFocus}>
   <div class="primary">
     <span class="muted">{device.state.power ? 'On' : 'Off'}{now ? ` · ${now}` : ''}</span>
     <DeviceControls {device} />

@@ -6,14 +6,16 @@
   import { dragToClose } from '../lib/dragToClose';
   import { dur } from '../lib/motion';
 
-  let { title, onclose, children }: { title: string; onclose: () => void; children: Snippet } = $props();
+  let { title, onclose, fallbackFocus, children }: {
+    title: string; onclose: () => void; fallbackFocus?: () => HTMLElement | null; children: Snippet;
+  } = $props();
 
   let el: HTMLDivElement | undefined = $state();
 
   onMount(() => {
     const previous = document.activeElement as HTMLElement | null;
     el?.focus();
-    return () => previous?.focus?.();
+    return () => (previous?.isConnected ? previous : fallbackFocus?.())?.focus?.();
   });
 
   function onkeydown(e: KeyboardEvent): void {
@@ -57,6 +59,12 @@
 </div>
 
 <style>
-  .grabber { justify-self: center; width: 40px; height: 5px; border-radius: var(--radius-pill); background: var(--color-surface-3); }
+  /* Dragging here moves the sheet (dragToClose), not the page. */
+  .grabber, .sheet-head { touch-action: none; }
+  /* Padding enlarges the hit area; background-clip keeps the visible bar 5px. */
+  .grabber {
+    justify-self: center; box-sizing: content-box; width: 40px; height: 5px; padding: var(--space-2) 0;
+    border-radius: var(--radius-pill); background: var(--color-surface-3); background-clip: content-box;
+  }
   .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 </style>
