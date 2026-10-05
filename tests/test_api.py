@@ -173,7 +173,7 @@ def client(app_bundle) -> Iterator[TestClient]:
 
 
 def test_list_devices_returns_registered(client):
-    response = client.get("/devices/")
+    response = client.get("/api/devices/")
     assert response.status_code == 200
     body = response.json()
     ids = sorted(d["id"] for d in body)
@@ -181,7 +181,7 @@ def test_list_devices_returns_registered(client):
 
 
 def test_get_device_known(client):
-    response = client.get("/devices/dev-a")
+    response = client.get("/api/devices/dev-a")
     assert response.status_code == 200
     body = response.json()
     assert body["id"] == "dev-a"
@@ -189,7 +189,7 @@ def test_get_device_known(client):
 
 
 def test_get_device_unknown_returns_404(client):
-    response = client.get("/devices/does-not-exist")
+    response = client.get("/api/devices/does-not-exist")
     assert response.status_code == 404
 
 
@@ -206,7 +206,7 @@ def test_post_device_action_returns_new_state_and_publishes_event(
 
     bus.subscribe(EventType.DEVICE_STATE_CHANGED, sink)
 
-    response = client.post("/devices/dev-a/action", json={"action": "turn_on"})
+    response = client.post("/api/devices/dev-a/action", json={"action": "turn_on"})
     assert response.status_code == 200
     body = response.json()
     assert body["power"] is True
@@ -223,14 +223,14 @@ def test_post_device_action_returns_new_state_and_publishes_event(
 
 def test_post_device_action_unknown_device_404(client):
     response = client.post(
-        "/devices/nope/action", json={"action": "turn_on"}
+        "/api/devices/nope/action", json={"action": "turn_on"}
     )
     assert response.status_code == 404
 
 
 def test_post_device_action_malformed_body_422(client):
     # Missing required ``action`` key.
-    response = client.post("/devices/dev-a/action", json={"foo": "bar"})
+    response = client.post("/api/devices/dev-a/action", json={"foo": "bar"})
     assert response.status_code == 422
 
 
@@ -253,45 +253,45 @@ def _scene_payload(scene_id: str = "s1") -> dict[str, Any]:
 
 def test_scene_crud_round_trip(client):
     # initial list empty
-    assert client.get("/scenes/").json() == []
+    assert client.get("/api/scenes/").json() == []
 
     # create
     payload = _scene_payload("s1")
-    r = client.post("/scenes/", json=payload)
+    r = client.post("/api/scenes/", json=payload)
     assert r.status_code == 200
     assert r.json()["id"] == "s1"
 
     # list
-    listing = client.get("/scenes/").json()
+    listing = client.get("/api/scenes/").json()
     assert [s["id"] for s in listing] == ["s1"]
 
     # get
-    fetched = client.get("/scenes/s1").json()
+    fetched = client.get("/api/scenes/s1").json()
     assert fetched["name"] == "Scene s1"
 
     # update via PUT
     payload["description"] = "updated"
-    r = client.put("/scenes/s1", json=payload)
+    r = client.put("/api/scenes/s1", json=payload)
     assert r.status_code == 200
     assert r.json()["description"] == "updated"
 
     # PUT with mismatched id is 400
     payload_bad = dict(payload)
     payload_bad["id"] = "different"
-    r = client.put("/scenes/s1", json=payload_bad)
+    r = client.put("/api/scenes/s1", json=payload_bad)
     assert r.status_code == 400
 
     # delete
-    r = client.delete("/scenes/s1")
+    r = client.delete("/api/scenes/s1")
     assert r.status_code == 204
-    assert client.get("/scenes/s1").status_code == 404
+    assert client.get("/api/scenes/s1").status_code == 404
 
 
 def test_scene_execute_runs_actions(client, app_bundle):
     payload = _scene_payload("exec-s1")
-    client.post("/scenes/", json=payload)
+    client.post("/api/scenes/", json=payload)
 
-    r = client.post("/scenes/exec-s1/execute")
+    r = client.post("/api/scenes/exec-s1/execute")
     assert r.status_code == 200
     results = r.json()
     assert len(results) == 2
@@ -304,7 +304,7 @@ def test_scene_execute_runs_actions(client, app_bundle):
 
 
 def test_scene_execute_unknown_404(client):
-    r = client.post("/scenes/missing/execute")
+    r = client.post("/api/scenes/missing/execute")
     assert r.status_code == 404
 
 
@@ -327,27 +327,27 @@ def _schedule_payload(schedule_id: str = "sched-1") -> dict[str, Any]:
 def test_schedule_crud_and_reload(client):
     # create
     payload = _schedule_payload("sched-1")
-    r = client.post("/schedules/", json=payload)
+    r = client.post("/api/schedules/", json=payload)
     assert r.status_code == 200
     assert r.json()["enabled"] is True
 
     # list
-    rows = client.get("/schedules/").json()
+    rows = client.get("/api/schedules/").json()
     assert [s["id"] for s in rows] == ["sched-1"]
 
     # PATCH toggle enabled
-    r = client.patch("/schedules/sched-1", json={"enabled": False})
+    r = client.patch("/api/schedules/sched-1", json={"enabled": False})
     assert r.status_code == 200
     assert r.json()["enabled"] is False
 
     # PATCH unknown -> 404
-    r = client.patch("/schedules/missing", json={"enabled": False})
+    r = client.patch("/api/schedules/missing", json={"enabled": False})
     assert r.status_code == 404
 
     # delete
-    r = client.delete("/schedules/sched-1")
+    r = client.delete("/api/schedules/sched-1")
     assert r.status_code == 204
-    assert client.get("/schedules/").json() == []
+    assert client.get("/api/schedules/").json() == []
 
 
 # ---------------------------------------------------------------------------
@@ -358,10 +358,10 @@ def test_schedule_crud_and_reload(client):
 def test_websocket_receives_device_state_changed(client):
     """Connect WS, trigger a REST action, observe the broadcast."""
 
-    with client.websocket_connect("/ws") as ws:
+    with client.websocket_connect("/api/ws") as ws:
         # Trigger a state change via REST.
         r = client.post(
-            "/devices/dev-a/action", json={"action": "turn_on"}
+            "/api/devices/dev-a/action", json={"action": "turn_on"}
         )
         assert r.status_code == 200
 
@@ -376,10 +376,10 @@ def test_websocket_receives_device_state_changed(client):
 
 def test_websocket_receives_scene_executed(client):
     payload = _scene_payload("ws-scene")
-    client.post("/scenes/", json=payload)
+    client.post("/api/scenes/", json=payload)
 
-    with client.websocket_connect("/ws") as ws:
-        r = client.post("/scenes/ws-scene/execute")
+    with client.websocket_connect("/api/ws") as ws:
+        r = client.post("/api/scenes/ws-scene/execute")
         assert r.status_code == 200
 
         # Drain: expect two DEVICE_STATE_CHANGED + one SCENE_EXECUTED.

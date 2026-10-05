@@ -36,7 +36,7 @@ usage() {
 
 set_schedule_enabled() {
   local id="$1" enabled="$2"
-  _curl -X PATCH "${HESTIA_HOST}/schedules/${id}" \
+  _curl -X PATCH "${HESTIA_HOST}/api/schedules/${id}" \
     -H 'Content-Type: application/json' \
     -d "{\"enabled\": ${enabled}}"
   echo
@@ -49,7 +49,7 @@ main() {
   case "$resource:$verb" in
     scenes:list)       list_scenes | _pretty ;;
     scenes:show)       [[ -z "$id" ]] && usage
-                       _curl "${HESTIA_HOST}/scenes/${id}" | _pretty ;;
+                       _curl "${HESTIA_HOST}/api/scenes/${id}" | _pretty ;;
     scenes:delete)     [[ -z "$id" ]] && usage
                        delete_scene "$id" ;;
     scenes:run|scenes:execute)

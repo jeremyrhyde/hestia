@@ -17,12 +17,12 @@ clean (no ``Depends`` boilerplate) and matches FastAPI's idiomatic
 URL layout
 ----------
 
-API routes live at the root (``/devices/...``, ``/scenes/...``,
-``/schedules/...``, ``/ws``) per the spec in ``home-auto-context.md``.
-Static frontend assets, if present, are mounted under ``/ui/`` so they
-cannot collide with API paths. The mount is optional — if
-``settings.WEB_DIR`` does not exist yet (e.g. before Phase 4a) the app
-still boots and a warning is logged.
+Pantheon module contract: API routes live under ``/api`` (``/api/devices/...``,
+``/api/scenes/...``, ``/api/schedules/...``, ``/api/ws``); ``/health`` stays
+at the root; the static UI is served at ``/`` by :func:`mount_ui`, which
+must be the last thing registered. The mount is optional — if
+``settings.WEB_DIR`` does not exist the app still boots and a warning is
+logged.
 """
 
 from __future__ import annotations
@@ -322,10 +322,15 @@ def create_app(
     app.state.ws_manager = ws_manager
     app.state.settings = settings
 
-    app.include_router(_build_devices_router())
-    app.include_router(_build_scenes_router())
-    app.include_router(_build_schedules_router())
-    app.include_router(_build_ws_router())
+    api = APIRouter(prefix="/api")
+    for build in (
+        _build_devices_router,
+        _build_scenes_router,
+        _build_schedules_router,
+        _build_ws_router,
+    ):
+        api.include_router(build())
+    app.include_router(api)
 
     if mount_static and settings is not None:
         web_dir = Path(settings.WEB_DIR)

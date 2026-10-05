@@ -39,13 +39,13 @@ upsert_scene() {
   local body="$1"
   local id
   id=$(printf '%s' "$body" | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
-  if _curl -o /dev/null "${HESTIA_HOST}/scenes/${id}" >/dev/null 2>&1; then
+  if _curl -o /dev/null "${HESTIA_HOST}/api/scenes/${id}" >/dev/null 2>&1; then
     _log "updating scene ${id}"
-    _curl -X PUT "${HESTIA_HOST}/scenes/${id}" \
+    _curl -X PUT "${HESTIA_HOST}/api/scenes/${id}" \
       -H 'Content-Type: application/json' -d "$body"
   else
     _log "creating scene ${id}"
-    _curl -X POST "${HESTIA_HOST}/scenes/" \
+    _curl -X POST "${HESTIA_HOST}/api/scenes/" \
       -H 'Content-Type: application/json' -d "$body"
   fi
   echo
@@ -54,18 +54,18 @@ upsert_scene() {
 delete_scene() {
   local id="$1"
   _log "deleting scene ${id}"
-  _curl -X DELETE "${HESTIA_HOST}/scenes/${id}"
+  _curl -X DELETE "${HESTIA_HOST}/api/scenes/${id}"
 }
 
 execute_scene() {
   local id="$1"
   _log "executing scene ${id}"
-  _curl -X POST "${HESTIA_HOST}/scenes/${id}/execute"
+  _curl -X POST "${HESTIA_HOST}/api/scenes/${id}/execute"
   echo
 }
 
 list_scenes() {
-  _curl "${HESTIA_HOST}/scenes/"
+  _curl "${HESTIA_HOST}/api/scenes/"
   echo
 }
 
@@ -76,14 +76,14 @@ upsert_schedule() {
   local id
   id=$(printf '%s' "$body" | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
   # PATCH is the documented update path for schedules; POST creates.
-  if _curl -o /dev/null -X GET "${HESTIA_HOST}/schedules/" 2>/dev/null \
+  if _curl -o /dev/null -X GET "${HESTIA_HOST}/api/schedules/" 2>/dev/null \
        | python3 -c "import json,sys; ids={s['id'] for s in json.load(sys.stdin)}; sys.exit(0 if '${id}' in ids else 1)"; then
     _log "updating schedule ${id}"
-    _curl -X PATCH "${HESTIA_HOST}/schedules/${id}" \
+    _curl -X PATCH "${HESTIA_HOST}/api/schedules/${id}" \
       -H 'Content-Type: application/json' -d "$body"
   else
     _log "creating schedule ${id}"
-    _curl -X POST "${HESTIA_HOST}/schedules/" \
+    _curl -X POST "${HESTIA_HOST}/api/schedules/" \
       -H 'Content-Type: application/json' -d "$body"
   fi
   echo
@@ -92,10 +92,10 @@ upsert_schedule() {
 delete_schedule() {
   local id="$1"
   _log "deleting schedule ${id}"
-  _curl -X DELETE "${HESTIA_HOST}/schedules/${id}"
+  _curl -X DELETE "${HESTIA_HOST}/api/schedules/${id}"
 }
 
 list_schedules() {
-  _curl "${HESTIA_HOST}/schedules/"
+  _curl "${HESTIA_HOST}/api/schedules/"
   echo
 }
